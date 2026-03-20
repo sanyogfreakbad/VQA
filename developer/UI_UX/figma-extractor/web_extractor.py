@@ -1,0 +1,562 @@
+#!/usr/bin/env python3
+"""
+Web DOM Extractor
+
+Extracts visual/layout properties from rendered web pages using Playwright.
+Returns JSON structure matching the Figma extraction format.
+"""
+
+import re
+from datetime import datetime, timezone
+from typing import Any, Optional
+
+from playwright.async_api import async_playwright, Page, Browser
+
+
+def parse_color(color_str: str) -> dict[str, Any]:
+    """Parse CSS color string to {r, g, b, a} format."""
+    if not color_str or color_str == "transparent":
+        return {"r": 0, "g": 0, "b": 0, "a": 0}
+    
+    # Handle rgba(r, g, b, a)
+    rgba_match = re.match(r"rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)", color_str)
+    if rgba_match:
+        return {
+            "r": int(rgba_match.group(1)),
+            "g": int(rgba_match.group(2)),
+            "b": int(rgba_match.group(3)),
+            "a": float(rgba_match.group(4)) if rgba_match.group(4) else 1.0,
+        }
+    
+    # Handle hex colors
+    hex_match = re.match(r"#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})?", color_str)
+    if hex_match:
+        return {
+            "r": int(hex_match.group(1), 16),
+            "g": int(hex_match.group(2), 16),
+            "b": int(hex_match.group(3), 16),
+            "a": int(hex_match.group(4), 16) / 255 if hex_match.group(4) else 1.0,
+        }
+    
+    return {"r": 0, "g": 0, "b": 0, "a": 1}
+
+
+def parse_pixel_value(value: str) -> float:
+    """Parse CSS pixel value to float."""
+    if not value:
+        return 0
+    match = re.match(r"([\d.]+)", str(value))
+    return float(match.group(1)) if match else 0
+
+
+def determine_node_type(tag_name: str, styles: dict) -> str:
+    """Map HTML element to Figma-like node type."""
+    text_tags = {"P", "SPAN", "H1", "H2", "H3", "H4", "H5", "H6", "LABEL", "A", "STRONG", "EM", "B", "I"}
+    frame_tags = {"DIV", "SECTION", "ARTICLE", "HEADER", "FOOTER", "NAV", "MAIN", "ASIDE", "FORM"}
+    
+    if tag_name in text_tags:
+        return "TEXT"
+    if tag_name in {"IMG", "SVG", "CANVAS", "VIDEO"}:
+        return "IMAGE"
+    if tag_name in {"INPUT", "BUTTON", "SELECT", "TEXTAREA"}:
+        return "COMPONENT"
+    if tag_name in frame_tags:
+        return "FRAME"
+    return "RECTANGLE"
+
+
+def map_text_align(css_align: str) -> str:
+    """Map CSS text-align to Figma textAlignHorizontal."""
+    mapping = {
+        "left": "LEFT",
+        "center": "CENTER",
+        "right": "RIGHT",
+        "justify": "JUSTIFIED",
+        "start": "LEFT",
+        "end": "RIGHT",
+    }
+    return mapping.get(css_align, "LEFT")
+
+
+def map_layout_mode(display: str, flex_direction: str) -> Optional[str]:
+    """Map CSS display/flex to Figma layoutMode."""
+    if display == "flex" or display == "inline-flex":
+        if flex_direction in ("column", "column-reverse"):
+            return "VERTICAL"
+        return "HORIZONTAL"
+    if display == "grid":
+        return "VERTICAL"
+    return None
+
+
+DOM_WALKER_SCRIPT = """
+(config) => {
+    const results = [];
+    let nodeId = 0;
+    
+    function isVisible(el) {
+        const style = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        
+        if (style.display === 'none' || style.visibility === 'hidden') return false;
+        if (rect.width === 0 && rect.height === 0) return false;
+        if (parseFloat(style.opacity) === 0) return false;
+        
+        return true;
+    }
+    
+    function getStyles(el) {
+        const cs = window.getComputedStyle(el);
+        return {
+            display: cs.display,
+            position: cs.position,
+            flexDirection: cs.flexDirection,
+            justifyContent: cs.justifyContent,
+            alignItems: cs.alignItems,
+            gap: cs.gap,
+            backgroundColor: cs.backgroundColor,
+            color: cs.color,
+            borderColor: cs.borderColor,
+            borderWidth: cs.borderWidth,
+            borderStyle: cs.borderStyle,
+            borderRadius: cs.borderRadius,
+            borderTopLeftRadius: cs.borderTopLeftRadius,
+            borderTopRightRadius: cs.borderTopRightRadius,
+            borderBottomRightRadius: cs.borderBottomRightRadius,
+            borderBottomLeftRadius: cs.borderBottomLeftRadius,
+            paddingTop: cs.paddingTop,
+            paddingRight: cs.paddingRight,
+            paddingBottom: cs.paddingBottom,
+            paddingLeft: cs.paddingLeft,
+            marginTop: cs.marginTop,
+            marginRight: cs.marginRight,
+            marginBottom: cs.marginBottom,
+            marginLeft: cs.marginLeft,
+            fontFamily: cs.fontFamily,
+            fontSize: cs.fontSize,
+            fontWeight: cs.fontWeight,
+            fontStyle: cs.fontStyle,
+            lineHeight: cs.lineHeight,
+            letterSpacing: cs.letterSpacing,
+            textAlign: cs.textAlign,
+            textDecoration: cs.textDecoration,
+            textTransform: cs.textTransform,
+            opacity: cs.opacity,
+            overflow: cs.overflow,
+            boxShadow: cs.boxShadow,
+            transform: cs.transform,
+            zIndex: cs.zIndex,
+        };
+    }
+    
+    function getTextContent(el) {
+        let text = '';
+        for (const child of el.childNodes) {
+            if (child.nodeType === Node.TEXT_NODE) {
+                text += child.textContent;
+            }
+        }
+        return text.trim();
+    }
+    
+    function walkDOM(el, depth = 0, parentPath = '') {
+        if (depth > config.maxDepth) return;
+        if (!el || el.nodeType !== Node.ELEMENT_NODE) return;
+        
+        const tagName = el.tagName;
+        
+        // Skip script, style, noscript, and hidden elements
+        const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'META', 'LINK', 'HEAD', 'BR', 'HR'];
+        if (skipTags.includes(tagName)) return;
+        
+        if (!isVisible(el)) return;
+        
+        const rect = el.getBoundingClientRect();
+        const styles = getStyles(el);
+        const currentId = `node_${nodeId++}`;
+        const path = parentPath ? `${parentPath}/${tagName}[${currentId}]` : tagName;
+        
+        // Get direct text content
+        const textContent = getTextContent(el);
+        
+        // Get class and id for better identification
+        const className = el.className && typeof el.className === 'string' ? el.className : '';
+        const elId = el.id || '';
+        
+        const nodeData = {
+            id: currentId,
+            tagName: tagName,
+            className: className,
+            elementId: elId,
+            path: path,
+            textContent: textContent,
+            depth: depth,
+            boundingBox: {
+                x: rect.x + window.scrollX,
+                y: rect.y + window.scrollY,
+                width: rect.width,
+                height: rect.height,
+            },
+            styles: styles,
+        };
+        
+        // Get additional attributes for specific elements
+        if (tagName === 'IMG') {
+            nodeData.src = el.src;
+            nodeData.alt = el.alt;
+        } else if (tagName === 'A') {
+            nodeData.href = el.href;
+        } else if (tagName === 'INPUT') {
+            nodeData.inputType = el.type;
+            nodeData.placeholder = el.placeholder;
+            nodeData.value = el.value;
+        } else if (tagName === 'BUTTON') {
+            nodeData.buttonType = el.type;
+        }
+        
+        results.push(nodeData);
+        
+        // Recursively process children
+        for (const child of el.children) {
+            walkDOM(child, depth + 1, path);
+        }
+    }
+    
+    // Start from body or specified root
+    const root = config.rootSelector 
+        ? document.querySelector(config.rootSelector) 
+        : document.body;
+    
+    if (root) {
+        walkDOM(root, 0, '');
+    }
+    
+    return {
+        url: window.location.href,
+        title: document.title,
+        viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            scrollWidth: document.documentElement.scrollWidth,
+            scrollHeight: document.documentElement.scrollHeight,
+        },
+        rawNodes: results,
+    };
+}
+"""
+
+
+def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
+    """Convert raw DOM node data to Figma-compatible format."""
+    tag_name = raw_node.get("tagName", "DIV")
+    styles = raw_node.get("styles", {})
+    bbox = raw_node.get("boundingBox", {})
+    text_content = raw_node.get("textContent", "")
+    
+    node_type = determine_node_type(tag_name, styles)
+    
+    # Build name from element identifiers
+    name_parts = [tag_name.lower()]
+    if raw_node.get("elementId"):
+        name_parts.append(f"#{raw_node['elementId']}")
+    if raw_node.get("className"):
+        classes = raw_node["className"].split()[:2]
+        name_parts.extend(f".{c}" for c in classes)
+    
+    normalized = {
+        "id": raw_node.get("id"),
+        "name": " ".join(name_parts),
+        "type": node_type,
+        "x": round(bbox.get("x", 0), 2),
+        "y": round(bbox.get("y", 0), 2),
+        "width": round(bbox.get("width", 0), 2),
+        "height": round(bbox.get("height", 0), 2),
+    }
+    
+    # Extract fills (background color)
+    bg_color = styles.get("backgroundColor", "")
+    if bg_color and bg_color != "rgba(0, 0, 0, 0)":
+        normalized["fills"] = [{
+            "type": "SOLID",
+            "color": parse_color(bg_color),
+        }]
+    
+    # Extract strokes (borders)
+    border_width = parse_pixel_value(styles.get("borderWidth", "0"))
+    border_color = styles.get("borderColor", "")
+    if border_width > 0 and styles.get("borderStyle") not in ("none", ""):
+        normalized["strokes"] = [{
+            "type": "SOLID",
+            "color": parse_color(border_color),
+        }]
+        normalized["strokeWeight"] = border_width
+    
+    # Extract corner radius
+    corner_radius = parse_pixel_value(styles.get("borderRadius", "0"))
+    if corner_radius > 0:
+        normalized["cornerRadius"] = corner_radius
+        
+        # Individual corner radii
+        radii = [
+            parse_pixel_value(styles.get("borderTopLeftRadius", "0")),
+            parse_pixel_value(styles.get("borderTopRightRadius", "0")),
+            parse_pixel_value(styles.get("borderBottomRightRadius", "0")),
+            parse_pixel_value(styles.get("borderBottomLeftRadius", "0")),
+        ]
+        if not all(r == corner_radius for r in radii):
+            normalized["rectangleCornerRadii"] = radii
+    
+    # Type-specific properties
+    if node_type == "TEXT":
+        normalized["characters"] = text_content
+        normalized["fontSize"] = parse_pixel_value(styles.get("fontSize", "16"))
+        normalized["fontFamily"] = styles.get("fontFamily", "").split(",")[0].strip().strip('"\'')
+        
+        font_weight = styles.get("fontWeight", "400")
+        normalized["fontWeight"] = int(font_weight) if font_weight.isdigit() else 400
+        
+        normalized["textAlignHorizontal"] = map_text_align(styles.get("textAlign", "left"))
+        normalized["letterSpacing"] = parse_pixel_value(styles.get("letterSpacing", "0"))
+        normalized["lineHeightPx"] = parse_pixel_value(styles.get("lineHeight", "0"))
+        
+        text_color = styles.get("color", "")
+        if text_color:
+            normalized["fills"] = [{
+                "type": "SOLID",
+                "color": parse_color(text_color),
+            }]
+    
+    elif node_type == "FRAME":
+        # Padding
+        normalized["paddingTop"] = parse_pixel_value(styles.get("paddingTop", "0"))
+        normalized["paddingRight"] = parse_pixel_value(styles.get("paddingRight", "0"))
+        normalized["paddingBottom"] = parse_pixel_value(styles.get("paddingBottom", "0"))
+        normalized["paddingLeft"] = parse_pixel_value(styles.get("paddingLeft", "0"))
+        
+        # Layout mode
+        layout_mode = map_layout_mode(
+            styles.get("display", ""),
+            styles.get("flexDirection", "")
+        )
+        if layout_mode:
+            normalized["layoutMode"] = layout_mode
+        
+        # Gap / item spacing
+        gap = parse_pixel_value(styles.get("gap", "0"))
+        if gap > 0:
+            normalized["itemSpacing"] = gap
+    
+    elif node_type == "COMPONENT":
+        normalized["componentType"] = tag_name
+        if raw_node.get("inputType"):
+            normalized["inputType"] = raw_node["inputType"]
+        if raw_node.get("placeholder"):
+            normalized["placeholder"] = raw_node["placeholder"]
+    
+    elif node_type == "IMAGE":
+        if raw_node.get("src"):
+            normalized["imageUrl"] = raw_node["src"]
+        if raw_node.get("alt"):
+            normalized["altText"] = raw_node["alt"]
+    
+    # Add opacity if not fully opaque
+    opacity = float(styles.get("opacity", "1"))
+    if opacity < 1:
+        normalized["opacity"] = opacity
+    
+    # Add box shadow if present
+    box_shadow = styles.get("boxShadow", "")
+    if box_shadow and box_shadow != "none":
+        normalized["effects"] = [{"type": "DROP_SHADOW", "raw": box_shadow}]
+    
+    return normalized
+
+
+async def execute_login(
+    page: Page,
+    username: str,
+    password: str,
+    selectors: Optional[dict] = None,
+) -> bool:
+    """Execute login flow on the page."""
+    default_selectors = {
+        "username": 'input[type="email"], input[type="text"], input[name="username"], input[name="email"], #username, #email',
+        "password": 'input[type="password"], input[name="password"], #password',
+        "submit": 'button[type="submit"], input[type="submit"], button:has-text("Log in"), button:has-text("Sign in"), button:has-text("Login")',
+    }
+    
+    sel = {**default_selectors, **(selectors or {})}
+    
+    try:
+        # Wait for page to load
+        await page.wait_for_load_state("networkidle", timeout=10000)
+        
+        # Find and fill username field
+        username_field = await page.query_selector(sel["username"])
+        if username_field:
+            await username_field.fill(username)
+        else:
+            return False
+        
+        # Find and fill password field
+        password_field = await page.query_selector(sel["password"])
+        if password_field:
+            await password_field.fill(password)
+        else:
+            return False
+        
+        # Click submit button
+        submit_btn = await page.query_selector(sel["submit"])
+        if submit_btn:
+            await submit_btn.click()
+        else:
+            # Try pressing Enter as fallback
+            await password_field.press("Enter")
+        
+        # Wait for navigation after login
+        await page.wait_for_load_state("networkidle", timeout=30000)
+        
+        return True
+        
+    except Exception as e:
+        print(f"Login error: {e}")
+        return False
+
+
+async def wait_for_react_render(page: Page, timeout: int = 10000) -> None:
+    """Wait for React/SPA to finish rendering."""
+    try:
+        # Wait for network to be idle
+        await page.wait_for_load_state("networkidle", timeout=timeout)
+        
+        # Additional wait for React hydration
+        await page.evaluate("""
+            () => new Promise((resolve) => {
+                // Check if React DevTools hook exists (React app indicator)
+                if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+                    // Give React a moment to finish rendering
+                    requestIdleCallback ? requestIdleCallback(resolve) : setTimeout(resolve, 500);
+                } else {
+                    // Not a React app, just wait a bit
+                    setTimeout(resolve, 300);
+                }
+            })
+        """)
+        
+    except Exception:
+        # Timeout is acceptable, continue with extraction
+        pass
+
+
+async def extract_from_url(
+    url: str,
+    credentials: Optional[dict] = None,
+    login_url: Optional[str] = None,
+    root_selector: Optional[str] = None,
+    max_depth: int = 50,
+    viewport: Optional[dict] = None,
+    wait_for_selector: Optional[str] = None,
+    screenshot: bool = False,
+) -> dict[str, Any]:
+    """
+    Extract visual properties from a web page.
+    
+    Args:
+        url: Target URL to extract from
+        credentials: Optional dict with 'username' and 'password'
+        login_url: URL of login page (if different from target)
+        root_selector: CSS selector to start extraction from (default: body)
+        max_depth: Maximum DOM traversal depth
+        viewport: Custom viewport {width, height}
+        wait_for_selector: Wait for specific element before extraction
+        screenshot: Capture screenshot as base64
+    
+    Returns:
+        Figma-compatible JSON structure
+    """
+    async with async_playwright() as p:
+        browser: Browser = await p.chromium.launch(headless=True)
+        
+        context = await browser.new_context(
+            viewport=viewport or {"width": 1920, "height": 1080},
+            device_scale_factor=1,
+        )
+        
+        page = await context.new_page()
+        
+        try:
+            # Handle authentication if credentials provided
+            if credentials and credentials.get("username") and credentials.get("password"):
+                auth_url = login_url or url
+                await page.goto(auth_url, wait_until="domcontentloaded")
+                
+                login_success = await execute_login(
+                    page,
+                    credentials["username"],
+                    credentials["password"],
+                    credentials.get("selectors"),
+                )
+                
+                if not login_success:
+                    raise Exception("Login failed - could not find login form elements")
+                
+                # Navigate to target if different from login
+                if login_url and login_url != url:
+                    await page.goto(url, wait_until="domcontentloaded")
+            else:
+                await page.goto(url, wait_until="domcontentloaded")
+            
+            # Wait for React/SPA rendering
+            await wait_for_react_render(page)
+            
+            # Wait for specific selector if provided
+            if wait_for_selector:
+                await page.wait_for_selector(wait_for_selector, timeout=10000)
+            
+            # Execute DOM walker script
+            raw_data = await page.evaluate(
+                DOM_WALKER_SCRIPT,
+                {"maxDepth": max_depth, "rootSelector": root_selector},
+            )
+            
+            # Capture screenshot if requested
+            screenshot_base64 = None
+            if screenshot:
+                screenshot_bytes = await page.screenshot(full_page=True)
+                import base64
+                screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+            
+            # Normalize nodes to Figma format
+            nodes = [normalize_dom_node(node) for node in raw_data.get("rawNodes", [])]
+            
+            # Filter out zero-size nodes
+            nodes = [n for n in nodes if n["width"] > 0 or n["height"] > 0]
+            
+            result = {
+                "source": "web",
+                "url": raw_data.get("url", url),
+                "title": raw_data.get("title", ""),
+                "viewport": raw_data.get("viewport", {}),
+                "extracted_at": datetime.now(timezone.utc).isoformat(),
+                "total_nodes_extracted": len(nodes),
+                "nodes": nodes,
+            }
+            
+            if screenshot_base64:
+                result["screenshot"] = screenshot_base64
+            
+            return result
+            
+        finally:
+            await browser.close()
+
+
+# Synchronous wrapper for non-async contexts
+def extract_from_url_sync(
+    url: str,
+    credentials: Optional[dict] = None,
+    **kwargs,
+) -> dict[str, Any]:
+    """Synchronous wrapper for extract_from_url."""
+    import asyncio
+    return asyncio.run(extract_from_url(url, credentials, **kwargs))
