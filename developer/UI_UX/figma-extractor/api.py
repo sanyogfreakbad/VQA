@@ -7,15 +7,17 @@ Enables automated visual comparison between design and implementation.
 """
 
 import os
-from typing import Optional
+import json
+from typing import Optional, Dict
 
-from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query, BackgroundTasks, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 
 from figma_extractor import fetch_figma_file, extract_design_data
 from web_extractor import extract_from_url
+from design_comparator import DesignComparator, DesignDataExtractor
 
 load_dotenv()
 
@@ -251,6 +253,169 @@ async def extract_web_page_get(
         raise HTTPException(
             status_code=500,
             detail=f"Web extraction failed: {str(e)}",
+        )
+
+
+class CompareRequest(BaseModel):
+    """Request body for design comparison."""
+    figma_data: Dict = Field(..., description="Figma extraction JSON data")
+    web_data: Dict = Field(..., description="Web extraction JSON data")
+    tolerance: Optional[Dict] = Field(
+        None,
+        description="Custom tolerance values: {font_size, spacing, size, ratio, color}",
+        examples=[{"font_size": 2, "spacing": 4, "size": 10, "ratio": 0.05, "color": 0.1}],
+    )
+
+
+@app.post("/api/compare")
+def compare_designs(request: CompareRequest):
+    """
+    Compare Figma design with web implementation.
+    
+    Produces a detailed diff table with columns:
+    - **element**: Element name/identifier
+    - **text**: Text content (truncated if long)
+    - **diff_type**: Category of difference (text_*, spacing_*, color_*, size_*, etc.)
+    - **figma_value**: Value in Figma design
+    - **web_value**: Value in web implementation
+    - **delta**: Computed difference or description
+    - **severity**: error/warning/info
+    
+    **Comparison Categories:**
+    - **Text**: font_family, font_size, font_weight, text_color, line_height, letter_spacing
+    - **Spacing**: padding (top/right/bottom/left), item_gap, vertical_gap
+    - **Color**: background, border (with perceptual distance calculation)
+    - **Size**: width, height, width_ratio, height_ratio (relative to container)
+    - **Layout**: layout_mode, alignment
+    - **Elements**: missing_in_figma, missing_in_web, order differences
+    
+    **Response Structure:**
+    ```json
+    {
+      "summary": {
+        "total_differences": 25,
+        "errors": 2,
+        "warnings": 15,
+        "info": 8,
+        "categories": {"text_font_weight": 5, "spacing_padding_top": 3, ...}
+      },
+      "differences": [
+        {"element": "...", "diff_type": "...", "figma_value": "...", "web_value": "...", ...}
+      ],
+      "by_category": {
+        "text": [...],
+        "spacing": [...],
+        "color": [...],
+        "size": [...],
+        "layout": [...],
+        "elements": [...]
+      }
+    }
+    ```
+    """
+    try:
+        comparator = DesignComparator(request.figma_data, request.web_data)
+        
+        if request.tolerance:
+            comparator.tolerance.update(request.tolerance)
+        
+        results = comparator.compare_all()
+        return results
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Comparison failed: {str(e)}"
+        )
+
+
+@app.post("/api/compare/files")
+async def compare_design_files(
+    figma_file: UploadFile = File(..., description="Figma extraction JSON file"),
+    web_file: UploadFile = File(..., description="Web extraction JSON file"),
+):
+    """
+    Compare uploaded Figma and Web JSON files.
+    
+    Accepts two JSON files (from /extract endpoints) and returns comparison results.
+    """
+    try:
+        figma_content = await figma_file.read()
+        web_content = await web_file.read()
+        
+        figma_data = json.loads(figma_content)
+        web_data = json.loads(web_content)
+        
+        comparator = DesignComparator(figma_data, web_data)
+        results = comparator.compare_all()
+        
+        return results
+        
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid JSON file: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Comparison failed: {str(e)}"
+        )
+
+
+@app.post("/api/compare/report-cards")
+def compare_report_cards(request: CompareRequest):
+    """
+    Compare only report card elements between Figma and Web.
+    
+    Specialized endpoint for dashboard/report card layouts.
+    Matches cards by text content similarity and compares:
+    - Card dimensions and ratios
+    - Padding values
+    - Background and border colors
+    - Text styling
+    """
+    try:
+        comparator = DesignComparator(request.figma_data, request.web_data)
+        comparator.diffs = []
+        comparator._compare_report_cards()
+        return comparator._format_results()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Comparison failed: {str(e)}"
+        )
+
+
+@app.post("/api/normalize")
+def normalize_design_data(data: Dict, source: str = Query("figma", description="Source: 'figma' or 'web'")):
+    """
+    Normalize design data into intermediate format.
+    
+    Returns extracted and categorized elements:
+    - text_elements: All text nodes with typography properties
+    - frame_elements: Container/frame nodes with layout properties
+    - button_elements: Button/CTA components
+    - report_cards: Report card elements (for dashboard UIs)
+    
+    Useful for debugging extraction or building custom comparison logic.
+    """
+    try:
+        from dataclasses import asdict
+        extractor = DesignDataExtractor(data, source)
+        
+        return {
+            "source": source,
+            "text_elements": [asdict(e) for e in extractor.extract_text_elements()],
+            "frame_elements": [asdict(e) for e in extractor.extract_frame_elements()],
+            "button_elements": [asdict(e) for e in extractor.extract_button_elements()],
+            "report_cards": [asdict(e) for e in extractor.extract_report_cards()],
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Normalization failed: {str(e)}"
         )
 
 

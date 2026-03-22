@@ -1,0 +1,4424 @@
+{
+    "source": "web",
+    "url": "https://dev-erp.cargoes.com/en/procurement/reports",
+    "title": "CargoesERP",
+    "viewport": {
+        "width": 1920,
+        "height": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1096
+    },
+    "extracted_at": "2026-03-22T17:45:10.765210+00:00",
+    "total_nodes_extracted": 273,
+    "nodes": [
+        {
+            "id": "node_0",
+            "name": "body",
+            "type": "RECTANGLE",
+            "x": 8,
+            "y": 8,
+            "width": 1904,
+            "height": 1080
+        },
+        {
+            "id": "node_1",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 8,
+            "y": 8,
+            "width": 1904,
+            "height": 1080,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_2",
+            "name": "div",
+            "type": "FRAME",
+            "x": 8,
+            "y": 8,
+            "width": 0,
+            "height": 1080,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_3",
+            "name": "div .d__none .d__md_flex",
+            "type": "FRAME",
+            "x": 0,
+            "y": 75,
+            "width": 48,
+            "height": 1005,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "paddingTop": 9.92,
+            "paddingRight": 6.08,
+            "paddingBottom": 16.0,
+            "paddingLeft": 6.08,
+            "layoutMode": "VERTICAL",
+            "effects": [
+                {
+                    "type": "DROP_SHADOW",
+                    "raw": "rgba(15, 15, 25, 0.04) 0px 8px 8px 0px"
+                }
+            ]
+        },
+        {
+            "id": "node_4",
+            "name": "div .SideMenu_DrawerContent__u6hDT",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 84.91,
+            "width": 35.84,
+            "height": 947.09,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_5",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 84.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_6",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 84.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_7",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 84.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_8",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 92.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_9",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 92.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_10",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 94.57,
+            "width": 16.67,
+            "height": 16.67
+        },
+        {
+            "id": "node_11",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 124.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_12",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 124.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_13",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 124.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_14",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 132.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_15",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 132.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_16",
+            "name": "g",
+            "type": "RECTANGLE",
+            "x": 14.94,
+            "y": 134.0,
+            "width": 14.83,
+            "height": 14.42
+        },
+        {
+            "id": "node_17",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 14.94,
+            "y": 134.0,
+            "width": 8.13,
+            "height": 5.77
+        },
+        {
+            "id": "node_18",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 22.85,
+            "y": 139.49,
+            "width": 3.49,
+            "height": 7.49
+        },
+        {
+            "id": "node_19",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 19.4,
+            "y": 138.01,
+            "width": 10.38,
+            "height": 10.42
+        },
+        {
+            "id": "node_20",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 164.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_21",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 164.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_22",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 164.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_23",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 172.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_24",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 172.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_25",
+            "name": "g",
+            "type": "RECTANGLE",
+            "x": 14.65,
+            "y": 174.37,
+            "width": 15.53,
+            "height": 13.74
+        },
+        {
+            "id": "node_26",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 22.06,
+            "y": 182.35,
+            "width": 8.11,
+            "height": 5.76
+        },
+        {
+            "id": "node_27",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 18.1,
+            "y": 175.84,
+            "width": 3.49,
+            "height": 7.49
+        },
+        {
+            "id": "node_28",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 14.65,
+            "y": 174.37,
+            "width": 10.38,
+            "height": 10.42
+        },
+        {
+            "id": "node_29",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 204.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_30",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 204.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_31",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 204.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_32",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 212.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_33",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 212.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_34",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 18.57,
+            "y": 220.06,
+            "width": 7.34,
+            "height": 3.96
+        },
+        {
+            "id": "node_35",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 214.57,
+            "width": 13.24,
+            "height": 16.67
+        },
+        {
+            "id": "node_36",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 23.33,
+            "y": 222.89,
+            "width": 9.08,
+            "height": 8.35
+        },
+        {
+            "id": "node_37",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 27.37,
+            "y": 225.65,
+            "width": 1,
+            "height": 4.22
+        },
+        {
+            "id": "node_38",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 244.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_39",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 244.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_40",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 244.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_41",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 252.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_42",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 252.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_43",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 22.36,
+            "y": 259.12,
+            "width": 3.43,
+            "height": 7.55
+        },
+        {
+            "id": "node_44",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 257.61,
+            "width": 16.67,
+            "height": 10.59
+        },
+        {
+            "id": "node_45",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 284.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_46",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 284.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_47",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 284.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_48",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 292.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_49",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 292.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_50",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 17.62,
+            "y": 294.57,
+            "width": 12.92,
+            "height": 16.67
+        },
+        {
+            "id": "node_51",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 19.89,
+            "y": 301.34,
+            "width": 8.38,
+            "height": 6.11
+        },
+        {
+            "id": "node_52",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 324.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_53",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 324.91,
+            "width": 35.84,
+            "height": 36,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_54",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 324.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_55",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 332.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_56",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 332.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_57",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 17.62,
+            "y": 334.57,
+            "width": 12.92,
+            "height": 16.67
+        },
+        {
+            "id": "node_58",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 19.89,
+            "y": 341.34,
+            "width": 8.38,
+            "height": 6.11
+        },
+        {
+            "id": "node_59",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 364.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_60",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 364.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_61",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 364.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_62",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 372.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_63",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 372.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_64",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 383.74,
+            "width": 16.67,
+            "height": 7.5
+        },
+        {
+            "id": "node_65",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 20.88,
+            "y": 374.57,
+            "width": 9.52,
+            "height": 9.47
+        },
+        {
+            "id": "node_66",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 24.29,
+            "y": 376.48,
+            "width": 2.69,
+            "height": 5.64
+        },
+        {
+            "id": "node_67",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 404.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_68",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 404.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_69",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 404.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_70",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 412.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_71",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 412.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_72",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 20.74,
+            "y": 419.57,
+            "width": 6.67,
+            "height": 6.67
+        },
+        {
+            "id": "node_73",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 414.57,
+            "width": 16.68,
+            "height": 16.67
+        },
+        {
+            "id": "node_74",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 444.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_75",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 444.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_76",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 444.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_77",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 452.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_78",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 452.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_79",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 20.74,
+            "y": 459.57,
+            "width": 6.67,
+            "height": 6.67
+        },
+        {
+            "id": "node_80",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 454.57,
+            "width": 16.68,
+            "height": 16.67
+        },
+        {
+            "id": "node_81",
+            "name": "div .SideMenu_DrawerContent__item__a__7k",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 484.91,
+            "width": 35.84,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_82",
+            "name": "div .SideMenu_DrawerContent__item__parent__zTEXS .SideMenu_NavItem__kePfE",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 484.91,
+            "width": 35.84,
+            "height": 36,
+            "cornerRadius": 3.2,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_83",
+            "name": "button ._IconButton_bk9tk_1 ._IconButton__cursor_bk9tk_11",
+            "type": "COMPONENT",
+            "x": 6.08,
+            "y": 484.91,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 24.0,
+            "componentType": "BUTTON"
+        },
+        {
+            "id": "node_84",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__md_tp5dr_13",
+            "type": "TEXT",
+            "x": 14.08,
+            "y": 492.91,
+            "width": 20,
+            "height": 20,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_85",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 14.08,
+            "y": 492.91,
+            "width": 20,
+            "height": 20
+        },
+        {
+            "id": "node_86",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 15.74,
+            "y": 494.57,
+            "width": 16.67,
+            "height": 16.67
+        },
+        {
+            "id": "node_87",
+            "name": "div ._DrawerFooter_zhou8_22",
+            "type": "FRAME",
+            "x": 6.08,
+            "y": 1064,
+            "width": 35.84,
+            "height": 0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_88",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 8,
+            "y": 8,
+            "width": 1904,
+            "height": 1080,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_89",
+            "name": "header .w__100 .Components_Components__NavLayout__GiKqA",
+            "type": "FRAME",
+            "x": 8,
+            "y": 8,
+            "width": 1904,
+            "height": 75,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "paddingTop": 16.0,
+            "paddingRight": 44.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 0.0,
+            "effects": [
+                {
+                    "type": "DROP_SHADOW",
+                    "raw": "rgba(0, 0, 0, 0.12) 0px 1px 4px 0px"
+                }
+            ]
+        },
+        {
+            "id": "node_90",
+            "name": "div ._Navigation__toolbar_tw2n7_8",
+            "type": "FRAME",
+            "x": 24,
+            "y": 24,
+            "width": 1844,
+            "height": 64,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_91",
+            "name": "div .w__100 .flex",
+            "type": "FRAME",
+            "x": 24,
+            "y": 24,
+            "width": 1844,
+            "height": 64,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_92",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 24,
+            "y": 24,
+            "width": 474,
+            "height": 64,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_93",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 24,
+            "y": 24,
+            "width": 474,
+            "height": 64,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_94",
+            "name": "div .mr__4 .flex--md-display-flex",
+            "type": "FRAME",
+            "x": 24,
+            "y": 40.5,
+            "width": 258,
+            "height": 31,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_95",
+            "name": "img",
+            "type": "IMAGE",
+            "x": 24,
+            "y": 40.5,
+            "width": 258,
+            "height": 31,
+            "imageUrl": "https://dev-erp.cargoes.com/logo/HeaderLogo.svg",
+            "altText": "Logo"
+        },
+        {
+            "id": "node_96",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 298,
+            "y": 24,
+            "width": 200,
+            "height": 64,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_97",
+            "name": "form .w__100 .mb__2",
+            "type": "FRAME",
+            "x": 298,
+            "y": 24,
+            "width": 200,
+            "height": 56,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_98",
+            "name": "div .w__100 .flex",
+            "type": "FRAME",
+            "x": 298,
+            "y": 24,
+            "width": 200,
+            "height": 56,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_99",
+            "name": "div .w__100 .flex",
+            "type": "FRAME",
+            "x": 298,
+            "y": 24,
+            "width": 200,
+            "height": 56,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_100",
+            "name": "div .bg__W200 ._BasicSelect_10soz_1",
+            "type": "FRAME",
+            "x": 298,
+            "y": 40,
+            "width": 200,
+            "height": 40,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_101",
+            "name": "div ._FormContainer_qex4r_1 ._FormContainer__floating_qex4r_48",
+            "type": "FRAME",
+            "x": 298,
+            "y": 40,
+            "width": 200,
+            "height": 40,
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 213,
+                        "g": 213,
+                        "b": 221,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 8.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 8.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_102",
+            "name": "label ._FormLabel_1cg9u_1 ._FormLabel__floating_1cg9u_15",
+            "type": "TEXT",
+            "x": 299,
+            "y": 24,
+            "width": 62.48,
+            "height": 16.2,
+            "characters": "ERP Platform",
+            "fontSize": 12.0,
+            "fontFamily": "PilatLight",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 18.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_103",
+            "name": "div ._BaseSelect_9qbdw_1 .css-0",
+            "type": "FRAME",
+            "x": 307,
+            "y": 41,
+            "width": 182,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_104",
+            "name": "span #react-select-2-live-region .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 307,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_105",
+            "name": "span .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 307,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_106",
+            "name": "div .css-ai6why-control",
+            "type": "FRAME",
+            "x": 307,
+            "y": 41,
+            "width": 182,
+            "height": 38,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_107",
+            "name": "div .css-owkiaq",
+            "type": "FRAME",
+            "x": 307,
+            "y": 51,
+            "width": 165,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_108",
+            "name": "div .css-1qigkcv-singleValue",
+            "type": "FRAME",
+            "x": 307,
+            "y": 51,
+            "width": 165,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_109",
+            "name": "div .css-1ixk1cs",
+            "type": "FRAME",
+            "x": 472,
+            "y": 41,
+            "width": 17,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_110",
+            "name": "div .css-1lqowl3",
+            "type": "FRAME",
+            "x": 472,
+            "y": 50,
+            "width": 17,
+            "height": 20,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_111",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__sm_tp5dr_9",
+            "type": "TEXT",
+            "x": 472,
+            "y": 51,
+            "width": 16,
+            "height": 16,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "PilatRegular",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 110,
+                        "g": 110,
+                        "b": 114,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_112",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 472,
+            "y": 51,
+            "width": 16,
+            "height": 16
+        },
+        {
+            "id": "node_113",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 474,
+            "y": 56.0,
+            "width": 12.01,
+            "height": 5.99
+        },
+        {
+            "id": "node_114",
+            "name": "div .flex .cursor",
+            "type": "FRAME",
+            "x": 946,
+            "y": 32,
+            "width": 922,
+            "height": 48,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_115",
+            "name": "div .w__100 .flex",
+            "type": "FRAME",
+            "x": 946,
+            "y": 32,
+            "width": 870,
+            "height": 48,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_116",
+            "name": "div .flex--md-display-flex .flex--md-basis-6",
+            "type": "FRAME",
+            "x": 946,
+            "y": 32,
+            "width": 290,
+            "height": 48,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_117",
+            "name": "div .mr__4 .mt__2",
+            "type": "FRAME",
+            "x": 946,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_118",
+            "name": "div ._FormContainer_qex4r_1 ._FormContainer__floating_qex4r_48",
+            "type": "FRAME",
+            "x": 946,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 213,
+                        "g": 213,
+                        "b": 221,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 8.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 8.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_119",
+            "name": "label ._FormLabel_1cg9u_1 ._FormLabel__floating_1cg9u_15",
+            "type": "TEXT",
+            "x": 947,
+            "y": 24,
+            "width": 53.7,
+            "height": 16.2,
+            "characters": "Legal Entity",
+            "fontSize": 12.0,
+            "fontFamily": "PilatLight",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 18.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_120",
+            "name": "div ._BaseSelect_9qbdw_1 .css-0",
+            "type": "FRAME",
+            "x": 955,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_121",
+            "name": "span #react-select-3-live-region .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 955,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_122",
+            "name": "span .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 955,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_123",
+            "name": "div .css-ai6why-control",
+            "type": "FRAME",
+            "x": 955,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_124",
+            "name": "div .css-owkiaq",
+            "type": "FRAME",
+            "x": 955,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_125",
+            "name": "div .css-1qigkcv-singleValue",
+            "type": "FRAME",
+            "x": 955,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_126",
+            "name": "div .css-1ixk1cs",
+            "type": "FRAME",
+            "x": 1194,
+            "y": 41,
+            "width": 17,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_127",
+            "name": "div .css-1lqowl3",
+            "type": "FRAME",
+            "x": 1194,
+            "y": 50,
+            "width": 17,
+            "height": 20,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_128",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__sm_tp5dr_9",
+            "type": "TEXT",
+            "x": 1194,
+            "y": 51,
+            "width": 16,
+            "height": 16,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "PilatRegular",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 110,
+                        "g": 110,
+                        "b": 114,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_129",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1194,
+            "y": 51,
+            "width": 16,
+            "height": 16
+        },
+        {
+            "id": "node_130",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1196,
+            "y": 56.0,
+            "width": 12.01,
+            "height": 5.99
+        },
+        {
+            "id": "node_131",
+            "name": "div .flex--md-display-flex .flex--md-basis-6",
+            "type": "FRAME",
+            "x": 1236,
+            "y": 32,
+            "width": 290,
+            "height": 48,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_132",
+            "name": "div .mr__4 .mt__2",
+            "type": "FRAME",
+            "x": 1236,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_133",
+            "name": "div ._FormContainer_qex4r_1 ._FormContainer__floating_qex4r_48",
+            "type": "FRAME",
+            "x": 1236,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 213,
+                        "g": 213,
+                        "b": 221,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 8.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 8.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_134",
+            "name": "label ._FormLabel_1cg9u_1 ._FormLabel__floating_1cg9u_15",
+            "type": "TEXT",
+            "x": 1237,
+            "y": 24,
+            "width": 63.15,
+            "height": 16.2,
+            "characters": "Business Unit",
+            "fontSize": 12.0,
+            "fontFamily": "PilatLight",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 18.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_135",
+            "name": "div ._BaseSelect_9qbdw_1 .css-0",
+            "type": "FRAME",
+            "x": 1245,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_136",
+            "name": "span #react-select-4-live-region .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 1245,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_137",
+            "name": "span .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 1245,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_138",
+            "name": "div .css-ai6why-control",
+            "type": "FRAME",
+            "x": 1245,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_139",
+            "name": "div .css-owkiaq",
+            "type": "FRAME",
+            "x": 1245,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_140",
+            "name": "div .css-1qigkcv-singleValue",
+            "type": "FRAME",
+            "x": 1245,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_141",
+            "name": "div .css-1ixk1cs",
+            "type": "FRAME",
+            "x": 1484,
+            "y": 41,
+            "width": 17,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_142",
+            "name": "div .css-1lqowl3",
+            "type": "FRAME",
+            "x": 1484,
+            "y": 50,
+            "width": 17,
+            "height": 20,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_143",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__sm_tp5dr_9",
+            "type": "TEXT",
+            "x": 1484,
+            "y": 51,
+            "width": 16,
+            "height": 16,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "PilatRegular",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 110,
+                        "g": 110,
+                        "b": 114,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_144",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1484,
+            "y": 51,
+            "width": 16,
+            "height": 16
+        },
+        {
+            "id": "node_145",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1486,
+            "y": 56.0,
+            "width": 12.01,
+            "height": 5.99
+        },
+        {
+            "id": "node_146",
+            "name": "div .flex--md-display-flex .flex--md-basis-6",
+            "type": "FRAME",
+            "x": 1526,
+            "y": 32,
+            "width": 290,
+            "height": 48,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_147",
+            "name": "div .mr__4 .mt__2",
+            "type": "FRAME",
+            "x": 1526,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_148",
+            "name": "div ._FormContainer_qex4r_1 ._FormContainer__disabled_qex4r_23",
+            "type": "FRAME",
+            "x": 1526,
+            "y": 40,
+            "width": 274,
+            "height": 40,
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 213,
+                        "g": 213,
+                        "b": 221,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 8.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 8.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0,
+            "opacity": 0.5
+        },
+        {
+            "id": "node_149",
+            "name": "label ._FormLabel_1cg9u_1 ._FormLabel__floating_1cg9u_15",
+            "type": "TEXT",
+            "x": 1527,
+            "y": 24,
+            "width": 39.46,
+            "height": 16.2,
+            "characters": "Location",
+            "fontSize": 12.0,
+            "fontFamily": "PilatLight",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 18.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_150",
+            "name": "div ._BaseSelect_9qbdw_1 .css-0",
+            "type": "FRAME",
+            "x": 1535,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_151",
+            "name": "span #react-select-5-live-region .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 1535,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_152",
+            "name": "span .css-7pg0cj-a11yText",
+            "type": "TEXT",
+            "x": 1535,
+            "y": 41,
+            "width": 1,
+            "height": 1,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_153",
+            "name": "div .css-ai6why-control",
+            "type": "FRAME",
+            "x": 1535,
+            "y": 41,
+            "width": 256,
+            "height": 38,
+            "cornerRadius": 4.0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_154",
+            "name": "div .css-owkiaq",
+            "type": "FRAME",
+            "x": 1535,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_155",
+            "name": "div .css-1qigkcv-singleValue",
+            "type": "FRAME",
+            "x": 1535,
+            "y": 51,
+            "width": 239,
+            "height": 18,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_156",
+            "name": "div .css-1ixk1cs",
+            "type": "FRAME",
+            "x": 1774,
+            "y": 41,
+            "width": 17,
+            "height": 38,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 8.0
+        },
+        {
+            "id": "node_157",
+            "name": "div .css-1lqowl3",
+            "type": "FRAME",
+            "x": 1774,
+            "y": 50,
+            "width": 17,
+            "height": 20,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_158",
+            "name": "span ._IconBase_tp5dr_1 ._IconBase__sm_tp5dr_9",
+            "type": "TEXT",
+            "x": 1774,
+            "y": 51,
+            "width": 16,
+            "height": 16,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "PilatRegular",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 110,
+                        "g": 110,
+                        "b": 114,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_159",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1774,
+            "y": 51,
+            "width": 16,
+            "height": 16
+        },
+        {
+            "id": "node_160",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1776,
+            "y": 56.0,
+            "width": 12.01,
+            "height": 5.99
+        },
+        {
+            "id": "node_161",
+            "name": "div",
+            "type": "FRAME",
+            "x": 1816,
+            "y": 38,
+            "width": 52,
+            "height": 36,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_162",
+            "name": "span",
+            "type": "TEXT",
+            "x": 1816,
+            "y": 38,
+            "width": 52,
+            "height": 36,
+            "characters": "",
+            "fontSize": 16.0,
+            "fontFamily": "Times",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 0,
+                        "b": 0,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_163",
+            "name": "div ._Avatar_1eseu_1 ._Avatar__size__md_1eseu_20",
+            "type": "FRAME",
+            "x": 1832,
+            "y": 38,
+            "width": 36,
+            "height": 36,
+            "cornerRadius": 100.0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_164",
+            "name": "p ._Avatar__label_1eseu_50 ._Avatar__label__md_1eseu_60",
+            "type": "TEXT",
+            "x": 1846.19,
+            "y": 47,
+            "width": 7.61,
+            "height": 18,
+            "characters": "P",
+            "fontSize": 12.0,
+            "fontFamily": "PilatRegular",
+            "fontWeight": 400,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 18.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_165",
+            "name": "div .pl__md_12 .bg__N500",
+            "type": "FRAME",
+            "x": 8,
+            "y": 83,
+            "width": 1904,
+            "height": 1005,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 235,
+                        "g": 235,
+                        "b": 240,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 48.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_166",
+            "name": "div .Toastify",
+            "type": "FRAME",
+            "x": 56,
+            "y": 83,
+            "width": 0,
+            "height": 1005,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_167",
+            "name": "div .w__100 .h__100",
+            "type": "FRAME",
+            "x": 56,
+            "y": 83,
+            "width": 1856,
+            "height": 1005,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_168",
+            "name": "div .p__6 .flex",
+            "type": "FRAME",
+            "x": 72,
+            "y": 99,
+            "width": 1824,
+            "height": 604.59,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "paddingTop": 24.0,
+            "paddingRight": 24.0,
+            "paddingBottom": 24.0,
+            "paddingLeft": 24.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "node_169",
+            "name": "div .mb__2 .flex",
+            "type": "FRAME",
+            "x": 96,
+            "y": 123,
+            "width": 1776,
+            "height": 21.59,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_170",
+            "name": "p ._Text_55uqd_1 .subheading__m",
+            "type": "TEXT",
+            "x": 96,
+            "y": 123,
+            "width": 74.22,
+            "height": 21.59,
+            "characters": "Reports",
+            "fontSize": 18.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 21.6,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_171",
+            "name": "div",
+            "type": "FRAME",
+            "x": 96,
+            "y": 152.59,
+            "width": 1776,
+            "height": 1,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_172",
+            "name": "div .css-1257dw3",
+            "type": "FRAME",
+            "x": 96,
+            "y": 177.59,
+            "width": 1776,
+            "height": 502,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "VERTICAL",
+            "itemSpacing": 16.0
+        },
+        {
+            "id": "node_173",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 177.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_174",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 177.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_175",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 194.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_176",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 194.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_177",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 194.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO To Payment Cycle",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_178",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 194.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_179",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 196.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_180",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 177.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_181",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 177.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_182",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 194.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_183",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 194.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_184",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 194.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Receipt Pending Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_185",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 194.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_186",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 196.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_187",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 251.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_188",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 251.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_189",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 268.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_190",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 268.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_191",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 268.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Purchase Price Variance Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_192",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 268.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_193",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 270.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_194",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 251.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_195",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 251.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_196",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 268.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_197",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 268.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_198",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 268.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Supplier Price List",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_199",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 268.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_200",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 270.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_201",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 325.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_202",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 325.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_203",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 342.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_204",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 342.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_205",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 342.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO Audit Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_206",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 342.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_207",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 344.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_208",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 325.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_209",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 325.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_210",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 342.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_211",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 342.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_212",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 342.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO Aging Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_213",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 342.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_214",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 344.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_215",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 399.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_216",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 399.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_217",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 416.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_218",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 416.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_219",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 416.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO Approval Status",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_220",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 416.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_221",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 418.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_222",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 399.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_223",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 399.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_224",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 416.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_225",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 416.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_226",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 416.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO Register Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_227",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 416.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_228",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 418.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_229",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 473.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_230",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 473.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_231",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 490.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_232",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 490.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_233",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 490.59,
+            "width": 802,
+            "height": 24,
+            "characters": "PO Receipt Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_234",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 490.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_235",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 492.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_236",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 473.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_237",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 473.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_238",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 490.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_239",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 490.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_240",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 490.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Goods Received Note",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_241",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 490.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_242",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 492.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_243",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 547.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_244",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 547.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_245",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 564.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_246",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 564.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_247",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 564.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Good Received Not Invoiced",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_248",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 564.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_249",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 566.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_250",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 547.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_251",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 547.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_252",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 564.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_253",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 564.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_254",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 564.59,
+            "width": 802,
+            "height": 24,
+            "characters": "3 Way Match Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_255",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 564.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_256",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 566.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_257",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 96,
+            "y": 621.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_258",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 96,
+            "y": 621.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_259",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 113,
+            "y": 638.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_260",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 113,
+            "y": 638.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_261",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 113,
+            "y": 638.59,
+            "width": 802,
+            "height": 24,
+            "characters": "Invoice Price Variance Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_262",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 935,
+            "y": 638.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_263",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 942.05,
+            "y": 640.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_264",
+            "name": "div .css-1ago99h",
+            "type": "FRAME",
+            "x": 992,
+            "y": 621.59,
+            "width": 880,
+            "height": 58,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_265",
+            "name": "div .css-h8j48",
+            "type": "FRAME",
+            "x": 992,
+            "y": 621.59,
+            "width": 880,
+            "height": 58,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingTop": 16.0,
+            "paddingRight": 16.0,
+            "paddingBottom": 16.0,
+            "paddingLeft": 16.0
+        },
+        {
+            "id": "node_266",
+            "name": "div .css-1knbux5",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 638.59,
+            "width": 846,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "node_267",
+            "name": "div .css-19z5hkf",
+            "type": "FRAME",
+            "x": 1009,
+            "y": 638.59,
+            "width": 810,
+            "height": 24,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_268",
+            "name": "p ._Text_55uqd_1 .mr__2",
+            "type": "TEXT",
+            "x": 1009,
+            "y": 638.59,
+            "width": 802,
+            "height": 24,
+            "characters": "AP Accrual Recon Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 600,
+            "textAlignHorizontal": "LEFT",
+            "letterSpacing": 0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "node_269",
+            "name": "svg",
+            "type": "RECTANGLE",
+            "x": 1831,
+            "y": 638.59,
+            "width": 24,
+            "height": 24
+        },
+        {
+            "id": "node_270",
+            "name": "path",
+            "type": "RECTANGLE",
+            "x": 1838.05,
+            "y": 640.59,
+            "width": 9.9,
+            "height": 20.0
+        },
+        {
+            "id": "node_271",
+            "name": "div .Toastify",
+            "type": "FRAME",
+            "x": 72,
+            "y": 703.59,
+            "width": 1824,
+            "height": 0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0
+        },
+        {
+            "id": "node_272",
+            "name": "div .elx-portal-container",
+            "type": "FRAME",
+            "x": 8,
+            "y": 1088,
+            "width": 1904,
+            "height": 0,
+            "paddingTop": 0.0,
+            "paddingRight": 0.0,
+            "paddingBottom": 0.0,
+            "paddingLeft": 0.0,
+            "layoutMode": "HORIZONTAL"
+        }
+    ]
+}

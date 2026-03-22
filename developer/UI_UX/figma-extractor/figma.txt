@@ -1,0 +1,1719 @@
+{
+    "file_name": "Procurement shared file",
+    "file_key": "YQpur6AxxedY8AVPjhVv6C",
+    "node_id": "3345-188011",
+    "last_modified": "2026-03-20T05:01:42Z",
+    "extracted_at": "2026-03-20T05:01:49.593311+00:00",
+    "version": "2332888886444219810",
+    "total_nodes_extracted": 57,
+    "nodes": [
+        {
+            "id": "3345:188011",
+            "name": "Frame 1272629191",
+            "type": "FRAME",
+            "x": 19393.0,
+            "y": 7800.0,
+            "width": 1392.0,
+            "height": 816.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 24.0,
+            "paddingRight": 24.0,
+            "paddingTop": 24.0,
+            "paddingBottom": 24.0,
+            "itemSpacing": 10.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "3345:188012",
+            "name": "Content",
+            "type": "FRAME",
+            "x": 19417.0,
+            "y": 7824.0,
+            "width": 1344.0,
+            "height": 768.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": 4.0,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": null,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "3345:188013",
+            "name": "Table / Inventory / Inventory Listing",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 7840.0,
+            "width": 1312.0,
+            "height": 736.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 24.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "I3345:188014;4948:29514",
+            "name": "Frame 2609000",
+            "type": "FRAME",
+            "x": 19445.0,
+            "y": 7854.0,
+            "width": 852.0,
+            "height": 24.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 8.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29317",
+            "name": "Text",
+            "type": "TEXT",
+            "x": 19445.0,
+            "y": 7854.0,
+            "width": 83.0,
+            "height": 24.0,
+            "characters": "Reports",
+            "fontSize": 20.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 24.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;5319:84802;3050:32455",
+            "name": "Badge",
+            "type": "TEXT",
+            "x": 19615.0,
+            "y": 7861.0,
+            "width": 34.0,
+            "height": 10.0,
+            "characters": "Badge",
+            "fontSize": 12.0,
+            "fontFamily": "Pilat",
+            "fontWeight": 400,
+            "textAlignHorizontal": "CENTER",
+            "textAlignVertical": "CENTER",
+            "letterSpacing": -0.06,
+            "lineHeightPx": 10.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29318",
+            "name": "Frame 629043",
+            "type": "FRAME",
+            "x": 20297.0,
+            "y": 7848.0,
+            "width": 436.0,
+            "height": 36.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29533",
+            "name": "Search",
+            "type": "FRAME",
+            "x": 20297.0,
+            "y": 7854.0,
+            "width": 24.0,
+            "height": 24.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 8.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29326",
+            "name": "Icons",
+            "type": "FRAME",
+            "x": 20297.0,
+            "y": 7848.0,
+            "width": 76.0,
+            "height": 36.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 4.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29285;4612:33035;5984:192845;3190:108004",
+            "name": "12",
+            "type": "TEXT",
+            "x": 20326.0,
+            "y": 7851.0,
+            "width": 13.0,
+            "height": 10.0,
+            "characters": "12",
+            "fontSize": 12.0,
+            "fontFamily": "Pilat",
+            "fontWeight": 400,
+            "textAlignHorizontal": "CENTER",
+            "textAlignVertical": "CENTER",
+            "letterSpacing": -0.06,
+            "lineHeightPx": 10.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29285;4948:22633;5984:188421;3190:108004",
+            "name": "12",
+            "type": "TEXT",
+            "x": 20366.0,
+            "y": 7851.0,
+            "width": 13.0,
+            "height": 10.0,
+            "characters": "12",
+            "fontSize": 12.0,
+            "fontFamily": "Pilat",
+            "fontWeight": 400,
+            "textAlignHorizontal": "CENTER",
+            "textAlignVertical": "CENTER",
+            "letterSpacing": -0.06,
+            "lineHeightPx": 10.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29319",
+            "name": "Actions",
+            "type": "FRAME",
+            "x": 20385.0,
+            "y": 7848.0,
+            "width": 348.0,
+            "height": 36.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 16.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29331;3044:18970",
+            "name": "Call to action",
+            "type": "TEXT",
+            "x": 20397.0,
+            "y": 7862.0,
+            "width": 65.0,
+            "height": 8.0,
+            "characters": "Download",
+            "fontSize": 12.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.399999618530273,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29331;15413:40969",
+            "name": "Buttons",
+            "type": "FRAME",
+            "x": 20493.0,
+            "y": 7848.0,
+            "width": 20.0,
+            "height": 36.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": 10.0,
+            "paddingBottom": 10.0,
+            "itemSpacing": 8.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29515;3044:19015",
+            "name": "Call to action",
+            "type": "TEXT",
+            "x": 20506.0,
+            "y": 7862.0,
+            "width": 78.0,
+            "height": 8.0,
+            "characters": "Bulk Upload",
+            "fontSize": 12.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.399999618530273,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29515;3044:19310",
+            "name": "Buttons",
+            "type": "FRAME",
+            "x": 20602.0,
+            "y": 7848.0,
+            "width": 36.0,
+            "height": 36.0,
+            "fills": [],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": null,
+            "paddingTop": 10.0,
+            "paddingBottom": 10.0,
+            "itemSpacing": 8.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "I3345:188014;4948:29520;3044:18982",
+            "name": "Call to action",
+            "type": "TEXT",
+            "x": 20660.0,
+            "y": 7862.0,
+            "width": 29.0,
+            "height": 8.0,
+            "characters": "New",
+            "fontSize": 12.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.399999618530273,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "I3345:188014;4948:29520;3044:19290",
+            "name": "Buttons",
+            "type": "FRAME",
+            "x": 20728.0,
+            "y": 7848.0,
+            "width": 36.0,
+            "height": 36.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 0,
+                        "g": 68,
+                        "b": 93,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": null,
+            "paddingTop": 10.0,
+            "paddingBottom": 10.0,
+            "itemSpacing": 8.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189127",
+            "name": "Frame 1272629194",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 7916.0,
+            "width": 1312.0,
+            "height": 660.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 24.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189156",
+            "name": "Frame 1272629192",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 7916.0,
+            "width": 644.0,
+            "height": 660.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 24.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "3345:189157",
+            "name": "Receivable Aging Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 7916.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189158",
+            "name": "PO To Payment Cycle Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 7935.0,
+            "width": 242.0,
+            "height": 14.0,
+            "characters": "PO To Payment Cycle Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189160",
+            "name": "Customer Account Statement",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 7992.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189161",
+            "name": "Purchase Price Variance Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8011.0,
+            "width": 266.0,
+            "height": 14.0,
+            "characters": "Purchase Price Variance Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189163",
+            "name": "Tax Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8068.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189164",
+            "name": "Supplier Price List",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8087.0,
+            "width": 152.0,
+            "height": 14.0,
+            "characters": "Supplier Price List",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189166",
+            "name": "Transaction Detail Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8144.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189167",
+            "name": "PO Aging Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8163.0,
+            "width": 143.0,
+            "height": 14.0,
+            "characters": "PO Aging Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189169",
+            "name": "Journal Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8220.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189170",
+            "name": "PO Register Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8239.0,
+            "width": 162.0,
+            "height": 14.0,
+            "characters": "PO Register Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189172",
+            "name": "Credit Limit Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8296.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189173",
+            "name": "Goods Received Note",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8315.0,
+            "width": 179.0,
+            "height": 14.0,
+            "characters": "Goods Received Note",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189175",
+            "name": "AR Summary Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8372.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189176",
+            "name": "3 Way Match Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8391.0,
+            "width": 170.0,
+            "height": 14.0,
+            "characters": "3 Way Match Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189178",
+            "name": "Receipt Summary Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8448.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189179",
+            "name": "AP Accrual Reconciliation Report",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8467.0,
+            "width": 279.0,
+            "height": 14.0,
+            "characters": "AP Accrual Reconciliation Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189181",
+            "name": "Receipt Applicaiton Report",
+            "type": "FRAME",
+            "x": 19433.0,
+            "y": 8524.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189182",
+            "name": "Requisition to PO Conversion",
+            "type": "TEXT",
+            "x": 19449.0,
+            "y": 8543.0,
+            "width": 246.0,
+            "height": 14.0,
+            "characters": "Requisition to PO Conversion",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189207",
+            "name": "Frame 1272629193",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 7916.0,
+            "width": 644.0,
+            "height": 660.0,
+            "fills": [],
+            "strokes": [],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": null,
+            "paddingRight": null,
+            "paddingTop": null,
+            "paddingBottom": null,
+            "itemSpacing": 24.0,
+            "layoutMode": "VERTICAL"
+        },
+        {
+            "id": "3345:189208",
+            "name": "Receivable Aging Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 7916.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189209",
+            "name": "Receipt Pending Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 7935.0,
+            "width": 202.0,
+            "height": 14.0,
+            "characters": "Receipt Pending Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189211",
+            "name": "Customer Account Statement",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 7992.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189212",
+            "name": "Unmatched Invoice Details Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8011.0,
+            "width": 289.0,
+            "height": 14.0,
+            "characters": "Unmatched Invoice Details Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189214",
+            "name": "Tax Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8068.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189215",
+            "name": "PO Audit Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8087.0,
+            "width": 138.0,
+            "height": 14.0,
+            "characters": "PO Audit Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189217",
+            "name": "Transaction Detail Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8144.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189218",
+            "name": "PO Approval Status",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8163.0,
+            "width": 164.0,
+            "height": 14.0,
+            "characters": "PO Approval Status",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189220",
+            "name": "Journal Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8220.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189221",
+            "name": "PO Receipt Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8239.0,
+            "width": 156.0,
+            "height": 14.0,
+            "characters": "PO Receipt Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189223",
+            "name": "Credit Limit Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8296.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189224",
+            "name": "Good Received Not Invoiced",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8315.0,
+            "width": 237.0,
+            "height": 14.0,
+            "characters": "Good Received Not Invoiced",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189226",
+            "name": "AR Summary Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8372.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189227",
+            "name": "Invoice Price Variance Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8391.0,
+            "width": 247.0,
+            "height": 14.0,
+            "characters": "Invoice Price Variance Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189229",
+            "name": "Receipt Summary Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8448.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189230",
+            "name": "Requisition Approval Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8467.0,
+            "width": 238.0,
+            "height": 14.0,
+            "characters": "Requisition Approval Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "id": "3345:189232",
+            "name": "Receipt Applicaiton Report",
+            "type": "FRAME",
+            "x": 20101.0,
+            "y": 8524.0,
+            "width": 644.0,
+            "height": 52.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 255,
+                        "g": 255,
+                        "b": 255,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokes": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 153,
+                        "g": 204,
+                        "b": 223,
+                        "a": 1.0
+                    }
+                }
+            ],
+            "strokeWeight": 1.0,
+            "cornerRadius": null,
+            "paddingLeft": 16.0,
+            "paddingRight": 16.0,
+            "paddingTop": 16.0,
+            "paddingBottom": 16.0,
+            "itemSpacing": 12.0,
+            "layoutMode": "HORIZONTAL"
+        },
+        {
+            "id": "3345:189233",
+            "name": "Requisition Summary Report",
+            "type": "TEXT",
+            "x": 20117.0,
+            "y": 8543.0,
+            "width": 244.0,
+            "height": 14.0,
+            "characters": "Requisition Summary Report",
+            "fontSize": 16.0,
+            "fontFamily": "Montserrat",
+            "fontWeight": 700,
+            "textAlignHorizontal": "LEFT",
+            "textAlignVertical": "TOP",
+            "letterSpacing": 0.0,
+            "lineHeightPx": 14.0,
+            "fills": [
+                {
+                    "type": "SOLID",
+                    "color": {
+                        "r": 15,
+                        "g": 15,
+                        "b": 25,
+                        "a": 1.0
+                    }
+                }
+            ]
+        }
+    ]
+}

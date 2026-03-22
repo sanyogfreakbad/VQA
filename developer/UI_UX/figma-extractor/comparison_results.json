@@ -1,0 +1,951 @@
+{
+  "summary": {
+    "total_differences": 51,
+    "errors": 17,
+    "warnings": 29,
+    "info": 5,
+    "categories": {
+      "element_missing_in_web": 14,
+      "text_content": 3,
+      "text_font_weight": 28,
+      "size_height": 1,
+      "spacing_padding_top": 1,
+      "spacing_padding_right": 1,
+      "spacing_padding_bottom": 1,
+      "spacing_padding_left": 1,
+      "spacing_item_gap": 1
+    }
+  },
+  "differences": [
+    {
+      "element": "Badge",
+      "text": "Badge",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Badge",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "12",
+      "text": "12",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "12",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "12",
+      "text": "12",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "12",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Call to action",
+      "text": "Download",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Download",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Call to action",
+      "text": "Bulk Upload",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Bulk Upload",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Call to action",
+      "text": "New",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "New",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "PO To Payment Cycle Report",
+      "text": "PO To Payment Cycle Report",
+      "diff_type": "text_content",
+      "figma_value": "PO To Payment Cycle Report",
+      "web_value": "PO To Payment Cycle",
+      "delta": "Text differs",
+      "severity": "error"
+    },
+    {
+      "element": "PO To Payment Cycle Report",
+      "text": "PO To Payment Cycle Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Purchase Price Variance Report",
+      "text": "Purchase Price Variance Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Supplier Price List",
+      "text": "Supplier Price List",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "PO Aging Report",
+      "text": "PO Aging Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "PO Register Report",
+      "text": "PO Register Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Goods Received Note",
+      "text": "Goods Received Note",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "3 Way Match Report",
+      "text": "3 Way Match Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "AP Accrual Reconciliation Report",
+      "text": "AP Accrual Reconciliation Report",
+      "diff_type": "text_content",
+      "figma_value": "AP Accrual Reconciliation Report",
+      "web_value": "AP Accrual Recon Report",
+      "delta": "Text differs",
+      "severity": "error"
+    },
+    {
+      "element": "AP Accrual Reconciliation Report",
+      "text": "AP Accrual Reconciliation Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Requisition to PO Conversion",
+      "text": "Requisition to PO Conversion",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition to PO Conversion",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Receipt Pending Report",
+      "text": "Receipt Pending Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Unmatched Invoice Details Report",
+      "text": "Unmatched Invoice Details Report",
+      "diff_type": "text_content",
+      "figma_value": "Unmatched Invoice Details Report",
+      "web_value": "Invoice Price Variance Report",
+      "delta": "Text differs",
+      "severity": "error"
+    },
+    {
+      "element": "Unmatched Invoice Details Report",
+      "text": "Unmatched Invoice Details Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "PO Audit Report",
+      "text": "PO Audit Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "PO Approval Status",
+      "text": "PO Approval Status",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "PO Receipt Report",
+      "text": "PO Receipt Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Good Received Not Invoiced",
+      "text": "Good Received Not Invoiced",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Invoice Price Variance Report",
+      "text": "Invoice Price Variance Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Invoice Price Variance Report",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Requisition Approval Report",
+      "text": "Requisition Approval Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition Approval Report",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Requisition Summary Report",
+      "text": "Requisition Summary Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition Summary Report",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Card: Reports",
+      "text": "Reports",
+      "diff_type": "size_height",
+      "figma_value": "768.0px",
+      "web_value": "604.59px",
+      "delta": "+163px",
+      "severity": "info"
+    },
+    {
+      "element": "Card: Reports",
+      "text": "Reports",
+      "diff_type": "spacing_padding_top",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
+    },
+    {
+      "element": "Card: Reports",
+      "text": "Reports",
+      "diff_type": "spacing_padding_right",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
+    },
+    {
+      "element": "Card: Reports",
+      "text": "Reports",
+      "diff_type": "spacing_padding_bottom",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
+    },
+    {
+      "element": "Card: Reports",
+      "text": "Reports",
+      "diff_type": "spacing_padding_left",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
+    },
+    {
+      "element": "Card: PO To Payment Cycle Report",
+      "text": "PO To Payment Cycle Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: Purchase Price Variance Report",
+      "text": "Purchase Price Variance Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: Supplier Price List",
+      "text": "Supplier Price List",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: PO Aging Report",
+      "text": "PO Aging Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: PO Register Report",
+      "text": "PO Register Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: Goods Received Note",
+      "text": "Goods Received Note",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: 3 Way Match Report",
+      "text": "3 Way Match Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: AP Accrual Reconciliation Repo...",
+      "text": "AP Accrual Reconciliation Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Report Card",
+      "text": "Requisition to PO Conversion",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition to PO Conversion",
+      "web_value": null,
+      "delta": "Card missing in web",
+      "severity": "error"
+    },
+    {
+      "element": "Card: Receipt Pending Report",
+      "text": "Receipt Pending Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Report Card",
+      "text": "Unmatched Invoice Details Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Unmatched Invoice Details Report",
+      "web_value": null,
+      "delta": "Card missing in web",
+      "severity": "error"
+    },
+    {
+      "element": "Card: PO Audit Report",
+      "text": "PO Audit Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: PO Approval Status",
+      "text": "PO Approval Status",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: PO Receipt Report",
+      "text": "PO Receipt Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: Good Received Not Invoiced",
+      "text": "Good Received Not Invoiced",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Card: Invoice Price Variance Report",
+      "text": "Invoice Price Variance Report",
+      "diff_type": "text_font_weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Report Card",
+      "text": "Requisition Approval Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition Approval Report",
+      "web_value": null,
+      "delta": "Card missing in web",
+      "severity": "error"
+    },
+    {
+      "element": "Report Card",
+      "text": "Requisition Summary Report",
+      "diff_type": "element_missing_in_web",
+      "figma_value": "Requisition Summary Report",
+      "web_value": null,
+      "delta": "Card missing in web",
+      "severity": "error"
+    },
+    {
+      "element": "Content Layout",
+      "text": null,
+      "diff_type": "spacing_item_gap",
+      "figma_value": "10.0px",
+      "web_value": "16px (estimated)",
+      "delta": "+6px",
+      "severity": "warning"
+    }
+  ],
+  "by_category": {
+    "text": [
+      {
+        "element_name": "PO To Payment Cycle Report",
+        "element_text": "PO To Payment Cycle Report",
+        "diff_type": "text_content",
+        "figma_value": "PO To Payment Cycle Report",
+        "web_value": "PO To Payment Cycle",
+        "delta": "Text differs",
+        "severity": "error"
+      },
+      {
+        "element_name": "PO To Payment Cycle Report",
+        "element_text": "PO To Payment Cycle Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Purchase Price Variance Report",
+        "element_text": "Purchase Price Variance Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Supplier Price List",
+        "element_text": "Supplier Price List",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "PO Aging Report",
+        "element_text": "PO Aging Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "PO Register Report",
+        "element_text": "PO Register Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Goods Received Note",
+        "element_text": "Goods Received Note",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "3 Way Match Report",
+        "element_text": "3 Way Match Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "AP Accrual Reconciliation Report",
+        "element_text": "AP Accrual Reconciliation Report",
+        "diff_type": "text_content",
+        "figma_value": "AP Accrual Reconciliation Report",
+        "web_value": "AP Accrual Recon Report",
+        "delta": "Text differs",
+        "severity": "error"
+      },
+      {
+        "element_name": "AP Accrual Reconciliation Report",
+        "element_text": "AP Accrual Reconciliation Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Receipt Pending Report",
+        "element_text": "Receipt Pending Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Unmatched Invoice Details Report",
+        "element_text": "Unmatched Invoice Details Report",
+        "diff_type": "text_content",
+        "figma_value": "Unmatched Invoice Details Report",
+        "web_value": "Invoice Price Variance Report",
+        "delta": "Text differs",
+        "severity": "error"
+      },
+      {
+        "element_name": "Unmatched Invoice Details Report",
+        "element_text": "Unmatched Invoice Details Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "PO Audit Report",
+        "element_text": "PO Audit Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "PO Approval Status",
+        "element_text": "PO Approval Status",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "PO Receipt Report",
+        "element_text": "PO Receipt Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Good Received Not Invoiced",
+        "element_text": "Good Received Not Invoiced",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO To Payment Cycle Report",
+        "element_text": "PO To Payment Cycle Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Purchase Price Variance Report",
+        "element_text": "Purchase Price Variance Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Supplier Price List",
+        "element_text": "Supplier Price List",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO Aging Report",
+        "element_text": "PO Aging Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO Register Report",
+        "element_text": "PO Register Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Goods Received Note",
+        "element_text": "Goods Received Note",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: 3 Way Match Report",
+        "element_text": "3 Way Match Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: AP Accrual Reconciliation Repo...",
+        "element_text": "AP Accrual Reconciliation Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Receipt Pending Report",
+        "element_text": "Receipt Pending Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO Audit Report",
+        "element_text": "PO Audit Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO Approval Status",
+        "element_text": "PO Approval Status",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: PO Receipt Report",
+        "element_text": "PO Receipt Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Good Received Not Invoiced",
+        "element_text": "Good Received Not Invoiced",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      },
+      {
+        "element_name": "Card: Invoice Price Variance Report",
+        "element_text": "Invoice Price Variance Report",
+        "diff_type": "text_font_weight",
+        "figma_value": 700,
+        "web_value": 600,
+        "delta": "700 \u2192 600",
+        "severity": "warning"
+      }
+    ],
+    "spacing": [
+      {
+        "element_name": "Card: Reports",
+        "element_text": "Reports",
+        "diff_type": "spacing_padding_top",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
+      },
+      {
+        "element_name": "Card: Reports",
+        "element_text": "Reports",
+        "diff_type": "spacing_padding_right",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
+      },
+      {
+        "element_name": "Card: Reports",
+        "element_text": "Reports",
+        "diff_type": "spacing_padding_bottom",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
+      },
+      {
+        "element_name": "Card: Reports",
+        "element_text": "Reports",
+        "diff_type": "spacing_padding_left",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
+      },
+      {
+        "element_name": "Content Layout",
+        "element_text": null,
+        "diff_type": "spacing_item_gap",
+        "figma_value": "10.0px",
+        "web_value": "16px (estimated)",
+        "delta": "+6px",
+        "severity": "warning"
+      }
+    ],
+    "color": [],
+    "size": [
+      {
+        "element_name": "Card: Reports",
+        "element_text": "Reports",
+        "diff_type": "size_height",
+        "figma_value": "768.0px",
+        "web_value": "604.59px",
+        "delta": "+163px",
+        "severity": "info"
+      }
+    ],
+    "layout": [],
+    "elements": [
+      {
+        "element_name": "Badge",
+        "element_text": "Badge",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Badge",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "12",
+        "element_text": "12",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "12",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "12",
+        "element_text": "12",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "12",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Call to action",
+        "element_text": "Download",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Download",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Call to action",
+        "element_text": "Bulk Upload",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Bulk Upload",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Call to action",
+        "element_text": "New",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "New",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Requisition to PO Conversion",
+        "element_text": "Requisition to PO Conversion",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition to PO Conversion",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Invoice Price Variance Report",
+        "element_text": "Invoice Price Variance Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Invoice Price Variance Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Requisition Approval Report",
+        "element_text": "Requisition Approval Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition Approval Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Requisition Summary Report",
+        "element_text": "Requisition Summary Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition Summary Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Report Card",
+        "element_text": "Requisition to PO Conversion",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition to PO Conversion",
+        "web_value": null,
+        "delta": "Card missing in web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Report Card",
+        "element_text": "Unmatched Invoice Details Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Unmatched Invoice Details Report",
+        "web_value": null,
+        "delta": "Card missing in web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Report Card",
+        "element_text": "Requisition Approval Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition Approval Report",
+        "web_value": null,
+        "delta": "Card missing in web",
+        "severity": "error"
+      },
+      {
+        "element_name": "Report Card",
+        "element_text": "Requisition Summary Report",
+        "diff_type": "element_missing_in_web",
+        "figma_value": "Requisition Summary Report",
+        "web_value": null,
+        "delta": "Card missing in web",
+        "severity": "error"
+      }
+    ]
+  }
+}
