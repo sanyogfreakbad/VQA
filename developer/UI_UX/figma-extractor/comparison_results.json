@@ -1,77 +1,67 @@
 {
   "summary": {
-    "total_differences": 51,
-    "errors": 17,
-    "warnings": 29,
+    "total_differences": 30,
+    "errors": 10,
+    "warnings": 15,
     "info": 5,
     "categories": {
-      "text": 31,
+      "text": 16,
       "spacing": 1,
       "padding": 4,
       "size": 1,
-      "missing_elements": 14
+      "missing_elements": 8
     }
   },
   "differences": [
     {
-      "element": "Badge",
-      "text": "Badge",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "Badge",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
+      "element": "Reports",
+      "text": "Reports",
+      "category": "size",
+      "sub_type": "height",
+      "figma_value": "768.0px",
+      "web_value": "604.59px",
+      "delta": "+163px",
+      "severity": "info"
     },
     {
-      "element": "12",
-      "text": "12",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "12",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
+      "element": "Reports",
+      "text": "Reports",
+      "category": "padding",
+      "sub_type": "top",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
     },
     {
-      "element": "12",
-      "text": "12",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "12",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
+      "element": "Reports",
+      "text": "Reports",
+      "category": "padding",
+      "sub_type": "right",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
     },
     {
-      "element": "Call to action",
-      "text": "Download",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "Download",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
+      "element": "Reports",
+      "text": "Reports",
+      "category": "padding",
+      "sub_type": "bottom",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
     },
     {
-      "element": "Call to action",
-      "text": "Bulk Upload",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "Bulk Upload",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
-    },
-    {
-      "element": "Call to action",
-      "text": "New",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "New",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
+      "element": "Reports",
+      "text": "Reports",
+      "category": "padding",
+      "sub_type": "left",
+      "figma_value": "16.0px",
+      "web_value": "24.0px",
+      "delta": "+8px",
+      "severity": "info"
     },
     {
       "element": "PO To Payment Cycle Report",
@@ -80,7 +70,7 @@
       "sub_type": "content",
       "figma_value": "PO To Payment Cycle Report",
       "web_value": "PO To Payment Cycle",
-      "delta": "Text differs",
+      "delta": "Missing 'Report' suffix",
       "severity": "error"
     },
     {
@@ -160,7 +150,7 @@
       "sub_type": "content",
       "figma_value": "AP Accrual Reconciliation Report",
       "web_value": "AP Accrual Recon Report",
-      "delta": "Text differs",
+      "delta": "Text truncated",
       "severity": "error"
     },
     {
@@ -174,38 +164,8 @@
       "severity": "warning"
     },
     {
-      "element": "Requisition to PO Conversion",
-      "text": "Requisition to PO Conversion",
-      "category": "missing_elements",
-      "sub_type": "missing",
-      "figma_value": "Requisition to PO Conversion",
-      "web_value": null,
-      "delta": "Missing in Web",
-      "severity": "error"
-    },
-    {
       "element": "Receipt Pending Report",
       "text": "Receipt Pending Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Unmatched Invoice Details Report",
-      "text": "Unmatched Invoice Details Report",
-      "category": "text",
-      "sub_type": "content",
-      "figma_value": "Unmatched Invoice Details Report",
-      "web_value": "Invoice Price Variance Report",
-      "delta": "Text differs",
-      "severity": "error"
-    },
-    {
-      "element": "Unmatched Invoice Details Report",
-      "text": "Unmatched Invoice Details Report",
       "category": "text",
       "sub_type": "weight",
       "figma_value": 700,
@@ -256,9 +216,39 @@
     {
       "element": "Invoice Price Variance Report",
       "text": "Invoice Price Variance Report",
+      "category": "text",
+      "sub_type": "weight",
+      "figma_value": 700,
+      "web_value": 600,
+      "delta": "700 \u2192 600",
+      "severity": "warning"
+    },
+    {
+      "element": "Content Layout",
+      "text": null,
+      "category": "spacing",
+      "sub_type": "gap",
+      "figma_value": "10.0px",
+      "web_value": "16px (estimated)",
+      "delta": "+6px",
+      "severity": "warning"
+    },
+    {
+      "element": "Requisition to PO Conversion",
+      "text": "Requisition to PO Conversion",
       "category": "missing_elements",
       "sub_type": "missing",
-      "figma_value": "Invoice Price Variance Report",
+      "figma_value": "Requisition to PO Conversion",
+      "web_value": null,
+      "delta": "Missing in Web",
+      "severity": "error"
+    },
+    {
+      "element": "Unmatched Invoice Details Report",
+      "text": "Unmatched Invoice Details Report",
+      "category": "missing_elements",
+      "sub_type": "missing",
+      "figma_value": "Unmatched Invoice Details Report",
       "web_value": null,
       "delta": "Missing in Web",
       "severity": "error"
@@ -284,373 +274,94 @@
       "severity": "error"
     },
     {
-      "element": "Card: Reports",
-      "text": "Reports",
-      "category": "size",
-      "sub_type": "height",
-      "figma_value": "768.0px",
-      "web_value": "604.59px",
-      "delta": "+163px",
-      "severity": "info"
-    },
-    {
-      "element": "Card: Reports",
-      "text": "Reports",
-      "category": "padding",
-      "sub_type": "top",
-      "figma_value": "16.0px",
-      "web_value": "24.0px",
-      "delta": "+8px",
-      "severity": "info"
-    },
-    {
-      "element": "Card: Reports",
-      "text": "Reports",
-      "category": "padding",
-      "sub_type": "right",
-      "figma_value": "16.0px",
-      "web_value": "24.0px",
-      "delta": "+8px",
-      "severity": "info"
-    },
-    {
-      "element": "Card: Reports",
-      "text": "Reports",
-      "category": "padding",
-      "sub_type": "bottom",
-      "figma_value": "16.0px",
-      "web_value": "24.0px",
-      "delta": "+8px",
-      "severity": "info"
-    },
-    {
-      "element": "Card: Reports",
-      "text": "Reports",
-      "category": "padding",
-      "sub_type": "left",
-      "figma_value": "16.0px",
-      "web_value": "24.0px",
-      "delta": "+8px",
-      "severity": "info"
-    },
-    {
-      "element": "Card: PO To Payment Cycle Report",
-      "text": "PO To Payment Cycle Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: Purchase Price Variance Report",
-      "text": "Purchase Price Variance Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: Supplier Price List",
-      "text": "Supplier Price List",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: PO Aging Report",
-      "text": "PO Aging Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: PO Register Report",
-      "text": "PO Register Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: Goods Received Note",
-      "text": "Goods Received Note",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: 3 Way Match Report",
-      "text": "3 Way Match Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: AP Accrual Reconciliation Repo...",
-      "text": "AP Accrual Reconciliation Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Report Card",
-      "text": "Requisition to PO Conversion",
+      "element": "Badge",
+      "text": "Badge",
       "category": "missing_elements",
       "sub_type": "missing",
-      "figma_value": "Requisition to PO Conversion",
+      "figma_value": "Badge",
       "web_value": null,
-      "delta": "Card missing in web",
+      "delta": "Missing in Web",
       "severity": "error"
     },
     {
-      "element": "Card: Receipt Pending Report",
-      "text": "Receipt Pending Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Report Card",
-      "text": "Unmatched Invoice Details Report",
+      "element": "Call to action",
+      "text": "Download",
       "category": "missing_elements",
       "sub_type": "missing",
-      "figma_value": "Unmatched Invoice Details Report",
+      "figma_value": "Download",
       "web_value": null,
-      "delta": "Card missing in web",
+      "delta": "Missing in Web",
       "severity": "error"
     },
     {
-      "element": "Card: PO Audit Report",
-      "text": "PO Audit Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: PO Approval Status",
-      "text": "PO Approval Status",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: PO Receipt Report",
-      "text": "PO Receipt Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: Good Received Not Invoiced",
-      "text": "Good Received Not Invoiced",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Card: Invoice Price Variance Report",
-      "text": "Invoice Price Variance Report",
-      "category": "text",
-      "sub_type": "weight",
-      "figma_value": 700,
-      "web_value": 600,
-      "delta": "700 \u2192 600",
-      "severity": "warning"
-    },
-    {
-      "element": "Report Card",
-      "text": "Requisition Approval Report",
+      "element": "Call to action",
+      "text": "Bulk Upload",
       "category": "missing_elements",
       "sub_type": "missing",
-      "figma_value": "Requisition Approval Report",
+      "figma_value": "Bulk Upload",
       "web_value": null,
-      "delta": "Card missing in web",
+      "delta": "Missing in Web",
       "severity": "error"
     },
     {
-      "element": "Report Card",
-      "text": "Requisition Summary Report",
+      "element": "Call to action",
+      "text": "New",
       "category": "missing_elements",
       "sub_type": "missing",
-      "figma_value": "Requisition Summary Report",
+      "figma_value": "New",
       "web_value": null,
-      "delta": "Card missing in web",
+      "delta": "Missing in Web",
       "severity": "error"
-    },
-    {
-      "element": "Content Layout",
-      "text": null,
-      "category": "spacing",
-      "sub_type": "gap",
-      "figma_value": "10.0px",
-      "web_value": "16px (estimated)",
-      "delta": "+6px",
-      "severity": "warning"
     }
   ],
   "by_category": {
-    "missing_elements": [
+    "size": [
       {
-        "element": "Badge",
-        "text": "Badge",
-        "sub_type": "missing",
-        "figma_value": "Badge",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
+        "element": "Reports",
+        "text": "Reports",
+        "sub_type": "height",
+        "figma_value": "768.0px",
+        "web_value": "604.59px",
+        "delta": "+163px",
+        "severity": "info"
+      }
+    ],
+    "padding": [
+      {
+        "element": "Reports",
+        "text": "Reports",
+        "sub_type": "top",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
       },
       {
-        "element": "12",
-        "text": "12",
-        "sub_type": "missing",
-        "figma_value": "12",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
+        "element": "Reports",
+        "text": "Reports",
+        "sub_type": "right",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
       },
       {
-        "element": "12",
-        "text": "12",
-        "sub_type": "missing",
-        "figma_value": "12",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
+        "element": "Reports",
+        "text": "Reports",
+        "sub_type": "bottom",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
       },
       {
-        "element": "Call to action",
-        "text": "Download",
-        "sub_type": "missing",
-        "figma_value": "Download",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Call to action",
-        "text": "Bulk Upload",
-        "sub_type": "missing",
-        "figma_value": "Bulk Upload",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Call to action",
-        "text": "New",
-        "sub_type": "missing",
-        "figma_value": "New",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Requisition to PO Conversion",
-        "text": "Requisition to PO Conversion",
-        "sub_type": "missing",
-        "figma_value": "Requisition to PO Conversion",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Invoice Price Variance Report",
-        "text": "Invoice Price Variance Report",
-        "sub_type": "missing",
-        "figma_value": "Invoice Price Variance Report",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Requisition Approval Report",
-        "text": "Requisition Approval Report",
-        "sub_type": "missing",
-        "figma_value": "Requisition Approval Report",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Requisition Summary Report",
-        "text": "Requisition Summary Report",
-        "sub_type": "missing",
-        "figma_value": "Requisition Summary Report",
-        "web_value": null,
-        "delta": "Missing in Web",
-        "severity": "error"
-      },
-      {
-        "element": "Report Card",
-        "text": "Requisition to PO Conversion",
-        "sub_type": "missing",
-        "figma_value": "Requisition to PO Conversion",
-        "web_value": null,
-        "delta": "Card missing in web",
-        "severity": "error"
-      },
-      {
-        "element": "Report Card",
-        "text": "Unmatched Invoice Details Report",
-        "sub_type": "missing",
-        "figma_value": "Unmatched Invoice Details Report",
-        "web_value": null,
-        "delta": "Card missing in web",
-        "severity": "error"
-      },
-      {
-        "element": "Report Card",
-        "text": "Requisition Approval Report",
-        "sub_type": "missing",
-        "figma_value": "Requisition Approval Report",
-        "web_value": null,
-        "delta": "Card missing in web",
-        "severity": "error"
-      },
-      {
-        "element": "Report Card",
-        "text": "Requisition Summary Report",
-        "sub_type": "missing",
-        "figma_value": "Requisition Summary Report",
-        "web_value": null,
-        "delta": "Card missing in web",
-        "severity": "error"
+        "element": "Reports",
+        "text": "Reports",
+        "sub_type": "left",
+        "figma_value": "16.0px",
+        "web_value": "24.0px",
+        "delta": "+8px",
+        "severity": "info"
       }
     ],
     "text": [
@@ -660,7 +371,7 @@
         "sub_type": "content",
         "figma_value": "PO To Payment Cycle Report",
         "web_value": "PO To Payment Cycle",
-        "delta": "Text differs",
+        "delta": "Missing 'Report' suffix",
         "severity": "error"
       },
       {
@@ -732,7 +443,7 @@
         "sub_type": "content",
         "figma_value": "AP Accrual Reconciliation Report",
         "web_value": "AP Accrual Recon Report",
-        "delta": "Text differs",
+        "delta": "Text truncated",
         "severity": "error"
       },
       {
@@ -747,24 +458,6 @@
       {
         "element": "Receipt Pending Report",
         "text": "Receipt Pending Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Unmatched Invoice Details Report",
-        "text": "Unmatched Invoice Details Report",
-        "sub_type": "content",
-        "figma_value": "Unmatched Invoice Details Report",
-        "web_value": "Invoice Price Variance Report",
-        "delta": "Text differs",
-        "severity": "error"
-      },
-      {
-        "element": "Unmatched Invoice Details Report",
-        "text": "Unmatched Invoice Details Report",
         "sub_type": "weight",
         "figma_value": 700,
         "web_value": 600,
@@ -808,179 +501,13 @@
         "severity": "warning"
       },
       {
-        "element": "Card: PO To Payment Cycle Report",
-        "text": "PO To Payment Cycle Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Purchase Price Variance Report",
-        "text": "Purchase Price Variance Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Supplier Price List",
-        "text": "Supplier Price List",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: PO Aging Report",
-        "text": "PO Aging Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: PO Register Report",
-        "text": "PO Register Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Goods Received Note",
-        "text": "Goods Received Note",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: 3 Way Match Report",
-        "text": "3 Way Match Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: AP Accrual Reconciliation Repo...",
-        "text": "AP Accrual Reconciliation Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Receipt Pending Report",
-        "text": "Receipt Pending Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: PO Audit Report",
-        "text": "PO Audit Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: PO Approval Status",
-        "text": "PO Approval Status",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: PO Receipt Report",
-        "text": "PO Receipt Report",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Good Received Not Invoiced",
-        "text": "Good Received Not Invoiced",
-        "sub_type": "weight",
-        "figma_value": 700,
-        "web_value": 600,
-        "delta": "700 \u2192 600",
-        "severity": "warning"
-      },
-      {
-        "element": "Card: Invoice Price Variance Report",
+        "element": "Invoice Price Variance Report",
         "text": "Invoice Price Variance Report",
         "sub_type": "weight",
         "figma_value": 700,
         "web_value": 600,
         "delta": "700 \u2192 600",
         "severity": "warning"
-      }
-    ],
-    "size": [
-      {
-        "element": "Card: Reports",
-        "text": "Reports",
-        "sub_type": "height",
-        "figma_value": "768.0px",
-        "web_value": "604.59px",
-        "delta": "+163px",
-        "severity": "info"
-      }
-    ],
-    "padding": [
-      {
-        "element": "Card: Reports",
-        "text": "Reports",
-        "sub_type": "top",
-        "figma_value": "16.0px",
-        "web_value": "24.0px",
-        "delta": "+8px",
-        "severity": "info"
-      },
-      {
-        "element": "Card: Reports",
-        "text": "Reports",
-        "sub_type": "right",
-        "figma_value": "16.0px",
-        "web_value": "24.0px",
-        "delta": "+8px",
-        "severity": "info"
-      },
-      {
-        "element": "Card: Reports",
-        "text": "Reports",
-        "sub_type": "bottom",
-        "figma_value": "16.0px",
-        "web_value": "24.0px",
-        "delta": "+8px",
-        "severity": "info"
-      },
-      {
-        "element": "Card: Reports",
-        "text": "Reports",
-        "sub_type": "left",
-        "figma_value": "16.0px",
-        "web_value": "24.0px",
-        "delta": "+8px",
-        "severity": "info"
       }
     ],
     "spacing": [
@@ -992,6 +519,80 @@
         "web_value": "16px (estimated)",
         "delta": "+6px",
         "severity": "warning"
+      }
+    ],
+    "missing_elements": [
+      {
+        "element": "Requisition to PO Conversion",
+        "text": "Requisition to PO Conversion",
+        "sub_type": "missing",
+        "figma_value": "Requisition to PO Conversion",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Unmatched Invoice Details Report",
+        "text": "Unmatched Invoice Details Report",
+        "sub_type": "missing",
+        "figma_value": "Unmatched Invoice Details Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Requisition Approval Report",
+        "text": "Requisition Approval Report",
+        "sub_type": "missing",
+        "figma_value": "Requisition Approval Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Requisition Summary Report",
+        "text": "Requisition Summary Report",
+        "sub_type": "missing",
+        "figma_value": "Requisition Summary Report",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Badge",
+        "text": "Badge",
+        "sub_type": "missing",
+        "figma_value": "Badge",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Call to action",
+        "text": "Download",
+        "sub_type": "missing",
+        "figma_value": "Download",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Call to action",
+        "text": "Bulk Upload",
+        "sub_type": "missing",
+        "figma_value": "Bulk Upload",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
+      },
+      {
+        "element": "Call to action",
+        "text": "New",
+        "sub_type": "missing",
+        "figma_value": "New",
+        "web_value": null,
+        "delta": "Missing in Web",
+        "severity": "error"
       }
     ]
   }

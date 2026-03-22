@@ -164,27 +164,78 @@ def normalize_text(text: str) -> str:
 
 
 def text_similarity(t1: str, t2: str) -> float:
-    """Calculate text similarity ratio (0-1)."""
-    t1, t2 = normalize_text(t1), normalize_text(t2)
-    if not t1 and not t2:
+    """Calculate text similarity ratio (0-1) using multiple methods."""
+    t1_norm, t2_norm = normalize_text(t1), normalize_text(t2)
+    if not t1_norm and not t2_norm:
         return 1.0
-    if not t1 or not t2:
+    if not t1_norm or not t2_norm:
         return 0.0
     
-    if t1 == t2:
+    if t1_norm == t2_norm:
         return 1.0
     
-    if t1 in t2 or t2 in t1:
-        return min(len(t1), len(t2)) / max(len(t1), len(t2))
+    words1 = t1_norm.split()
+    words2 = t2_norm.split()
     
-    words1 = set(t1.split())
-    words2 = set(t2.split())
-    if words1 and words2:
-        intersection = words1 & words2
-        union = words1 | words2
-        return len(intersection) / len(union)
+    if len(words1) >= 2 and len(words2) >= 2:
+        set1 = set(words1)
+        set2 = set(words2)
+        intersection = set1 & set2
+        union = set1 | set2
+        jaccard = len(intersection) / len(union) if union else 0
+        
+        seq_match = 0
+        min_len = min(len(words1), len(words2))
+        for i in range(min_len):
+            if words1[i] == words2[i]:
+                seq_match += 1
+        seq_score = seq_match / max(len(words1), len(words2))
+        
+        return max(jaccard, seq_score)
+    
+    if t1_norm in t2_norm or t2_norm in t1_norm:
+        return min(len(t1_norm), len(t2_norm)) / max(len(t1_norm), len(t2_norm))
     
     return 0.0
+
+
+def is_same_report(t1: str, t2: str) -> bool:
+    """Check if two texts refer to the same report (strict matching)."""
+    t1_norm = normalize_text(t1)
+    t2_norm = normalize_text(t2)
+    
+    if t1_norm == t2_norm:
+        return True
+    
+    t1_clean = t1_norm.replace("report", "").replace("reconciliation", "recon").strip()
+    t2_clean = t2_norm.replace("report", "").replace("reconciliation", "recon").strip()
+    
+    if t1_clean == t2_clean:
+        return True
+    
+    words1 = set(t1_clean.split())
+    words2 = set(t2_clean.split())
+    
+    words1.discard("")
+    words2.discard("")
+    
+    if not words1 or not words2:
+        return t1_norm == t2_norm
+    
+    if words1 == words2:
+        return True
+    
+    if words1.issubset(words2) or words2.issubset(words1):
+        larger = max(len(words1), len(words2))
+        smaller = min(len(words1), len(words2))
+        if smaller >= 2 and (smaller / larger) >= 0.7:
+            return True
+    
+    diff = words1.symmetric_difference(words2)
+    if len(diff) <= 1 and len(words1) >= 2:
+        return True
+    
+    return False
 
 
 class DesignDataExtractor:
@@ -417,9 +468,6 @@ class DesignDataExtractor:
             if elem.width and container_w:
                 elem.width_ratio = round(elem.width / container_w, 4)
             
-            column = "left" if (elem.x or 0) < container_w / 2 else "right"
-            elem.column = column
-            
             elements.append(elem)
             card_index += 1
         
@@ -473,62 +521,116 @@ class DesignComparator:
     def compare_all(self) -> Dict:
         """Run all comparisons and return structured results."""
         self.diffs = []
+        self._matched_figma_ids = set()
+        self._matched_web_ids = set()
         
-        self._compare_text_elements()
         self._compare_report_cards()
+        self._compare_remaining_text_elements()
         self._compare_layout_structure()
+        
+        self._deduplicate_diffs()
         
         return self._format_results()
     
-    def _compare_text_elements(self):
-        """Compare text elements between Figma and Web."""
+    def _deduplicate_diffs(self):
+        """Remove duplicate diff entries and resolve conflicts."""
+        seen_keys = set()
+        seen_texts_missing = set()
+        unique_diffs = []
+        
+        missing_diffs = [d for d in self.diffs if d.diff_type == DiffType.ELEMENT_MISSING_IN_WEB.value]
+        other_diffs = [d for d in self.diffs if d.diff_type != DiffType.ELEMENT_MISSING_IN_WEB.value]
+        
+        texts_with_other_diffs = set()
+        for diff in other_diffs:
+            text_key = normalize_text(diff.element_text or "")
+            if text_key:
+                texts_with_other_diffs.add(text_key)
+        
+        for diff in other_diffs:
+            text_key = normalize_text(diff.element_text or "")
+            key = (text_key, diff.diff_type, str(diff.figma_value), str(diff.web_value))
+            
+            if key not in seen_keys:
+                seen_keys.add(key)
+                unique_diffs.append(diff)
+        
+        for diff in missing_diffs:
+            text_key = normalize_text(diff.element_text or "")
+            
+            if text_key in texts_with_other_diffs:
+                continue
+            
+            if text_key in seen_texts_missing:
+                continue
+            
+            seen_texts_missing.add(text_key)
+            unique_diffs.append(diff)
+        
+        self.diffs = unique_diffs
+    
+    def _compare_remaining_text_elements(self):
+        """Compare text elements not already matched as report cards."""
         figma_texts = self.figma_extractor.extract_text_elements()
         web_texts = self.web_extractor.extract_text_elements()
+        
+        figma_texts = [t for t in figma_texts if t.element_id not in self._matched_figma_ids]
+        web_texts = [t for t in web_texts if t.element_id not in self._matched_web_ids]
         
         matched_web = set()
         
         for f_elem in figma_texts:
             best_match = None
-            best_score = 0.3
+            best_score = 0.7
             
             for i, w_elem in enumerate(web_texts):
                 if i in matched_web:
                     continue
+                
+                if is_same_report(f_elem.text or "", w_elem.text or ""):
+                    best_score = 1.0
+                    best_match = (i, w_elem)
+                    break
                 
                 score = text_similarity(f_elem.text or "", w_elem.text or "")
                 if score > best_score:
                     best_score = score
                     best_match = (i, w_elem)
             
-            if best_match:
+            if best_match and best_score >= 0.7:
                 matched_web.add(best_match[0])
-                self._compare_text_properties(f_elem, best_match[1])
+                self._compare_text_properties(f_elem, best_match[1], include_match_info=True)
             else:
-                self.diffs.append(DiffItem(
-                    element_name=f_elem.name,
-                    element_text=f_elem.text,
-                    diff_type=DiffType.ELEMENT_MISSING_IN_WEB.value,
-                    figma_value=f_elem.text,
-                    web_value=None,
-                    delta="Missing in Web",
-                    severity="error"
-                ))
+                if len(f_elem.text or "") > 2:
+                    self.diffs.append(DiffItem(
+                        element_name=f_elem.name,
+                        element_text=f_elem.text,
+                        diff_type=DiffType.ELEMENT_MISSING_IN_WEB.value,
+                        figma_value=f_elem.text,
+                        web_value=None,
+                        delta="Missing in Web",
+                        severity="error"
+                    ))
     
-    def _compare_text_properties(self, figma: NormalizedElement, web: NormalizedElement):
+    def _compare_text_properties(self, figma: NormalizedElement, web: NormalizedElement, include_match_info: bool = False):
         """Compare properties of matched text elements."""
         elem_name = figma.name or figma.text or "Unknown"
         elem_text = figma.text
         
-        if figma.text and web.text and normalize_text(figma.text) != normalize_text(web.text):
-            self.diffs.append(DiffItem(
-                element_name=elem_name,
-                element_text=elem_text,
-                diff_type=DiffType.TEXT_CONTENT.value,
-                figma_value=figma.text,
-                web_value=web.text,
-                delta="Text differs",
-                severity="error"
-            ))
+        f_text_norm = normalize_text(figma.text or "")
+        w_text_norm = normalize_text(web.text or "")
+        
+        if f_text_norm and w_text_norm and f_text_norm != w_text_norm:
+            if not is_same_report(figma.text or "", web.text or ""):
+                self.diffs.append(DiffItem(
+                    element_name=elem_name,
+                    element_text=elem_text,
+                    diff_type=DiffType.TEXT_CONTENT.value,
+                    figma_value=figma.text,
+                    web_value=web.text,
+                    delta="Text differs",
+                    severity="error"
+                ))
         
         if figma.font_family and web.font_family:
             f_font = figma.font_family.lower()
@@ -583,43 +685,113 @@ class DesignComparator:
                 ))
     
     def _compare_report_cards(self):
-        """Compare report card elements specifically."""
+        """Compare report card elements specifically with strict matching."""
         figma_cards = self.figma_extractor.extract_report_cards()
         web_cards = self.web_extractor.extract_report_cards()
         
-        matched_web = set()
+        matched_web_indices = set()
+        matched_figma_indices = set()
         
-        for f_card in figma_cards:
-            best_match = None
-            best_score = 0.5
+        for i, f_card in enumerate(figma_cards):
+            for j, w_card in enumerate(web_cards):
+                if j in matched_web_indices:
+                    continue
+                if is_same_report(f_card.text or "", w_card.text or ""):
+                    matched_web_indices.add(j)
+                    matched_figma_indices.add(i)
+                    self._matched_figma_ids.add(f_card.element_id)
+                    self._matched_web_ids.add(w_card.element_id)
+                    self._compare_card_properties(f_card, w_card)
+                    break
+        
+        for i, f_card in enumerate(figma_cards):
+            if i in matched_figma_indices:
+                continue
             
-            for i, w_card in enumerate(web_cards):
-                if i in matched_web:
+            best_match = None
+            best_score = 0.8
+            
+            for j, w_card in enumerate(web_cards):
+                if j in matched_web_indices:
                     continue
                 
                 score = text_similarity(f_card.text or "", w_card.text or "")
                 if score > best_score:
                     best_score = score
-                    best_match = (i, w_card)
+                    best_match = (j, w_card)
             
             if best_match:
-                matched_web.add(best_match[0])
+                matched_web_indices.add(best_match[0])
+                matched_figma_indices.add(i)
+                self._matched_figma_ids.add(f_card.element_id)
+                self._matched_web_ids.add(best_match[1].element_id)
                 self._compare_card_properties(f_card, best_match[1])
             else:
                 self.diffs.append(DiffItem(
-                    element_name="Report Card",
+                    element_name=f_card.text or "Report Card",
                     element_text=f_card.text,
                     diff_type=DiffType.ELEMENT_MISSING_IN_WEB.value,
                     figma_value=f_card.text,
                     web_value=None,
-                    delta="Card missing in web",
+                    delta="Missing in Web",
                     severity="error"
                 ))
     
     def _compare_card_properties(self, figma: NormalizedElement, web: NormalizedElement):
         """Compare properties of matched report cards."""
-        elem_name = f"Card: {figma.text[:30]}..." if len(figma.text or "") > 30 else f"Card: {figma.text}"
+        elem_name = figma.text[:40] if figma.text else "Report Card"
         elem_text = figma.text
+        
+        f_text = (figma.text or "").strip()
+        w_text = (web.text or "").strip()
+        if f_text and w_text and f_text != w_text:
+            self.diffs.append(DiffItem(
+                element_name=elem_name,
+                element_text=elem_text,
+                diff_type=DiffType.TEXT_CONTENT.value,
+                figma_value=f_text,
+                web_value=w_text,
+                delta=self._describe_text_diff(f_text, w_text),
+                severity="error"
+            ))
+        
+        if figma.font_weight and web.font_weight and figma.font_weight != web.font_weight:
+            self.diffs.append(DiffItem(
+                element_name=elem_name,
+                element_text=elem_text,
+                diff_type=DiffType.TEXT_FONT_WEIGHT.value,
+                figma_value=figma.font_weight,
+                web_value=web.font_weight,
+                delta=f"{figma.font_weight} → {web.font_weight}",
+                severity="warning"
+            ))
+        
+        if figma.font_family and web.font_family:
+            f_font = figma.font_family.lower()
+            w_font = web.font_family.lower()
+            if f_font != w_font and f_font not in w_font and w_font not in f_font:
+                self.diffs.append(DiffItem(
+                    element_name=elem_name,
+                    element_text=elem_text,
+                    diff_type=DiffType.TEXT_FONT_FAMILY.value,
+                    figma_value=figma.font_family,
+                    web_value=web.font_family,
+                    delta=f"{figma.font_family} → {web.font_family}",
+                    severity="warning"
+                ))
+        
+        if figma.text_color and web.text_color:
+            dist = color_distance(figma.text_color, web.text_color)
+            if dist > self.tolerance["color"]:
+                self.diffs.append(DiffItem(
+                    element_name=elem_name,
+                    element_text=elem_text,
+                    diff_type=DiffType.TEXT_COLOR.value,
+                    figma_value=figma.text_color,
+                    web_value=web.text_color,
+                    delta=f"Distance: {dist:.2f}",
+                    severity="warning"
+                ))
         
         if figma.width_ratio and web.width_ratio:
             diff = abs(figma.width_ratio - web.width_ratio)
@@ -696,27 +868,18 @@ class DesignComparator:
                 ))
         
         if figma.border_radius is not None and web.border_radius is not None:
-            if figma.border_radius != web.border_radius:
+            diff = abs(figma.border_radius - web.border_radius)
+            if diff > 0:
                 self.diffs.append(DiffItem(
                     element_name=elem_name,
                     element_text=elem_text,
                     diff_type=DiffType.BORDER_RADIUS.value,
                     figma_value=f"{figma.border_radius}px",
                     web_value=f"{web.border_radius}px",
-                    delta=f"{web.border_radius - figma.border_radius:+.0f}px",
+                    delta=f"{diff:+.0f}px",
                     severity="info"
                 ))
         
-        if figma.font_weight and web.font_weight and figma.font_weight != web.font_weight:
-            self.diffs.append(DiffItem(
-                element_name=elem_name,
-                element_text=elem_text,
-                diff_type=DiffType.TEXT_FONT_WEIGHT.value,
-                figma_value=figma.font_weight,
-                web_value=web.font_weight,
-                delta=f"{figma.font_weight} → {web.font_weight}",
-                severity="warning"
-            ))
     
     def _compare_layout_structure(self):
         """Compare overall layout structure."""
@@ -750,6 +913,28 @@ class DesignComparator:
                         delta=f"{w_gap - f_gap:+.0f}px",
                         severity="warning"
                     ))
+    
+    def _describe_text_diff(self, figma_text: str, web_text: str) -> str:
+        """Describe the nature of a text difference."""
+        f_lower = figma_text.lower()
+        w_lower = web_text.lower()
+        
+        if "report" in f_lower and "report" not in w_lower:
+            return "Missing 'Report' suffix"
+        if "report" not in f_lower and "report" in w_lower:
+            return "Extra 'Report' suffix"
+        
+        if len(figma_text) > len(web_text) + 3:
+            return "Text truncated"
+        if len(web_text) > len(figma_text) + 3:
+            return "Text expanded"
+        
+        if "reconciliation" in f_lower and "recon" in w_lower:
+            return "Abbreviated"
+        if "recon" in f_lower and "reconciliation" in w_lower:
+            return "Expanded abbreviation"
+        
+        return "Text differs"
     
     def _get_main_category(self, diff_type: str) -> str:
         """Map detailed diff type to main category."""
