@@ -751,27 +751,112 @@ class DesignComparator:
                         severity="warning"
                     ))
     
+    def _get_main_category(self, diff_type: str) -> str:
+        """Map detailed diff type to main category."""
+        if diff_type.startswith("text_"):
+            return "text"
+        elif diff_type in ["spacing_padding_top", "spacing_padding_right", 
+                          "spacing_padding_bottom", "spacing_padding_left"]:
+            return "padding"
+        elif diff_type.startswith("spacing_"):
+            return "spacing"
+        elif diff_type.startswith("color_"):
+            return "color"
+        elif diff_type.startswith("size_"):
+            return "size"
+        elif diff_type.startswith("layout_"):
+            return "components"
+        elif diff_type.startswith("element_"):
+            return "missing_elements"
+        elif diff_type.startswith("button_") or diff_type.startswith("component_"):
+            return "buttons_cta"
+        else:
+            return "other"
+    
+    def _get_sub_type(self, diff_type: str) -> str:
+        """Get the specific sub-type for display."""
+        sub_type_map = {
+            "text_content": "content",
+            "text_font_family": "font",
+            "text_font_size": "size",
+            "text_font_weight": "weight",
+            "text_line_height": "line_height",
+            "text_letter_spacing": "letter_spacing",
+            "text_alignment": "alignment",
+            "text_color": "color",
+            "spacing_padding_top": "top",
+            "spacing_padding_right": "right",
+            "spacing_padding_bottom": "bottom",
+            "spacing_padding_left": "left",
+            "spacing_item_gap": "gap",
+            "spacing_vertical_gap": "vertical_gap",
+            "color_background": "background",
+            "color_border": "border",
+            "size_width": "width",
+            "size_height": "height",
+            "size_width_ratio": "width_ratio",
+            "size_height_ratio": "height_ratio",
+            "border_radius": "border_radius",
+            "border_weight": "border_weight",
+            "layout_mode": "layout_mode",
+            "layout_alignment": "alignment",
+            "component_type": "type",
+            "component_state": "state",
+            "element_missing_in_web": "missing",
+        }
+        return sub_type_map.get(diff_type, diff_type)
+    
     def _format_results(self) -> Dict:
         """Format comparison results for output."""
-        by_type = defaultdict(list)
-        for diff in self.diffs:
-            by_type[diff.diff_type].append(diff)
-        
         error_count = sum(1 for d in self.diffs if d.severity == "error")
         warning_count = sum(1 for d in self.diffs if d.severity == "warning")
         info_count = sum(1 for d in self.diffs if d.severity == "info")
         
+        category_counts = defaultdict(int)
+        by_category = defaultdict(list)
+        
+        for diff in self.diffs:
+            main_cat = self._get_main_category(diff.diff_type)
+            category_counts[main_cat] += 1
+            by_category[main_cat].append(diff)
+        
         table_rows = []
         for diff in self.diffs:
+            main_cat = self._get_main_category(diff.diff_type)
+            sub_type = self._get_sub_type(diff.diff_type)
+            
             table_rows.append({
                 "element": diff.element_name,
                 "text": diff.element_text[:50] + "..." if diff.element_text and len(diff.element_text) > 50 else diff.element_text,
-                "diff_type": diff.diff_type,
+                "category": main_cat,
+                "sub_type": sub_type,
                 "figma_value": diff.figma_value,
                 "web_value": diff.web_value,
                 "delta": diff.delta,
                 "severity": diff.severity,
             })
+        
+        formatted_by_category = {}
+        for cat, diffs in by_category.items():
+            formatted_by_category[cat] = []
+            for diff in diffs:
+                sub_type = self._get_sub_type(diff.diff_type)
+                formatted_by_category[cat].append({
+                    "element": diff.element_name,
+                    "text": diff.element_text[:50] + "..." if diff.element_text and len(diff.element_text) > 50 else diff.element_text,
+                    "sub_type": sub_type,
+                    "figma_value": diff.figma_value,
+                    "web_value": diff.web_value,
+                    "delta": diff.delta,
+                    "severity": diff.severity,
+                })
+        
+        ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
+                            "components", "size", "missing_elements"]
+        sorted_categories = {k: category_counts.get(k, 0) for k in ordered_categories if k in category_counts}
+        for k, v in category_counts.items():
+            if k not in sorted_categories:
+                sorted_categories[k] = v
         
         return {
             "summary": {
@@ -779,17 +864,10 @@ class DesignComparator:
                 "errors": error_count,
                 "warnings": warning_count,
                 "info": info_count,
-                "categories": {k: len(v) for k, v in by_type.items()},
+                "categories": dict(sorted_categories),
             },
             "differences": table_rows,
-            "by_category": {
-                "text": [asdict(d) for d in self.diffs if d.diff_type.startswith("text_")],
-                "spacing": [asdict(d) for d in self.diffs if d.diff_type.startswith("spacing_")],
-                "color": [asdict(d) for d in self.diffs if d.diff_type.startswith("color_")],
-                "size": [asdict(d) for d in self.diffs if d.diff_type.startswith("size_")],
-                "layout": [asdict(d) for d in self.diffs if d.diff_type.startswith("layout_")],
-                "elements": [asdict(d) for d in self.diffs if d.diff_type.startswith("element_")],
-            },
+            "by_category": formatted_by_category,
         }
 
 

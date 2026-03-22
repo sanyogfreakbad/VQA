@@ -21,25 +21,25 @@ def print_table(differences: list, title: str = "Differences"):
         print(f"\n{title}: No differences found!")
         return
     
-    print(f"\n{'=' * 120}")
+    print(f"\n{'=' * 130}")
     print(f" {title} ({len(differences)} items)")
-    print('=' * 120)
-    print(f"{'Element':<25} | {'Text':<30} | {'Diff Type':<25} | {'Figma':<15} | {'Web':<15} | {'Delta':<15} | {'Sev':<8}")
-    print("-" * 120)
+    print('=' * 130)
+    print(f"{'Element':<25} | {'Text':<25} | {'Sub-Type':<15} | {'Figma':<18} | {'Web':<18} | {'Delta':<15} | {'Sev':<8}")
+    print("-" * 130)
     
     for diff in differences:
         text = diff.get("text", "") or ""
-        if len(text) > 28:
-            text = text[:25] + "..."
+        if len(text) > 23:
+            text = text[:20] + "..."
         
-        element = diff.get("element_name", diff.get("element", ""))[:23]
-        diff_type = diff.get("diff_type", "")[:23]
-        figma = str(diff.get("figma_value", "-"))[:13]
-        web = str(diff.get("web_value", "-"))[:13]
+        element = diff.get("element", "")[:23]
+        sub_type = diff.get("sub_type", diff.get("diff_type", ""))[:13]
+        figma = str(diff.get("figma_value", "-"))[:16]
+        web = str(diff.get("web_value", "-"))[:16]
         delta = str(diff.get("delta", ""))[:13]
         sev = diff.get("severity", "info")[:6]
         
-        print(f"{element:<25} | {text:<30} | {diff_type:<25} | {figma:<15} | {web:<15} | {delta:<15} | {sev:<8}")
+        print(f"{element:<25} | {text:<25} | {sub_type:<15} | {figma:<18} | {web:<18} | {delta:<15} | {sev:<8}")
 
 
 def main():
@@ -68,11 +68,14 @@ def main():
     for cat, count in summary["categories"].items():
         print(f"  - {cat}: {count}")
     
-    print_table(results["by_category"]["text"], "TEXT DIFFERENCES")
-    print_table(results["by_category"]["spacing"], "SPACING DIFFERENCES")
-    print_table(results["by_category"]["color"], "COLOR DIFFERENCES")
-    print_table(results["by_category"]["size"], "SIZE DIFFERENCES")
-    print_table(results["by_category"]["elements"], "ELEMENT DIFFERENCES")
+    print_table(results["by_category"].get("text", []), "TEXT (font, size, weight, color)")
+    print_table(results["by_category"].get("padding", []), "PADDING")
+    print_table(results["by_category"].get("spacing", []), "SPACING (gaps)")
+    print_table(results["by_category"].get("color", []), "COLOR (background, border)")
+    print_table(results["by_category"].get("size", []), "SIZE (width, height)")
+    print_table(results["by_category"].get("buttons_cta", []), "BUTTONS / CTA")
+    print_table(results["by_category"].get("components", []), "COMPONENTS (layout, alignment)")
+    print_table(results["by_category"].get("missing_elements", []), "MISSING ELEMENTS")
     
     print("\n" + "=" * 80)
     print(" NORMALIZED ELEMENTS PREVIEW")
