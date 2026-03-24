@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_image
 from web_extractor import extract_from_url
+from design_comparator import DesignComparator
 
 load_dotenv()
 
@@ -278,6 +279,87 @@ class WebExtractRequest(BaseModel):
         }
     }
 
+
+class CompareUrlsRequest(BaseModel):
+    """Request body for Figma vs Web URL comparison."""
+    figma_url: str = Field(
+        ...,
+        description="Full Figma URL (e.g., https://www.figma.com/design/FILE_KEY/Name?node-id=123-456)",
+    )
+    web_url: HttpUrl = Field(
+        ...,
+        description="Target web URL to compare against Figma design",
+    )
+    login_url: Optional[HttpUrl] = Field(
+        None,
+        description="URL of login page if different from target URL",
+    )
+    credentials: Optional[Credentials] = Field(
+        None,
+        description="Login credentials if the page requires authentication",
+    )
+    post_login_steps: Optional[list[PostLoginStep]] = Field(
+        None,
+        description="Steps to execute after login (e.g., workspace/organization selection)",
+    )
+    wait_for_selector: Optional[str] = Field(
+        None,
+        description="Wait for specific element before extraction (useful for SPAs)",
+    )
+    viewport: Optional[dict] = Field(
+        None,
+        description="Custom viewport dimensions: {width: int, height: int}",
+        examples=[{"width": 1440, "height": 800}],
+    )
+    max_depth: int = Field(
+        50,
+        ge=1,
+        le=100,
+        description="Maximum DOM traversal depth",
+    )
+    root_selector: Optional[str] = Field(
+        None,
+        description="CSS selector to limit extraction scope (default: body)",
+    )
+    tolerance: Optional[dict] = Field(
+        None,
+        description="Custom tolerance values: {font_size, spacing, size, ratio, color}",
+    )
+    figma_token: Optional[str] = Field(
+        None,
+        description="Figma API token (optional if set in .env)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "figma_url": "https://www.figma.com/design/Cq7YpYswOrCTlR8QvKUqIb/VQA-engine?node-id=1-137455",
+                    "web_url": "https://qa-wms.dpworld.com/asn",
+                    "login_url": "https://qa-wms.dpworld.com/in-warehouse",
+                    "credentials": {
+                        "username": "sunit_1",
+                        "password": "Test@123",
+                        "selectors": {
+                            "submit": "[role='button']:has-text('Sign In')"
+                        }
+                    },
+                    "post_login_steps": [
+                        {"action": "wait", "duration": 2000},
+                        {"action": "click", "selector": ".css-ai6why-control", "nth": 0},
+                        {"action": "click", "text": "DPW CIC CB Enterprises"},
+                        {"action": "click", "selector": ".css-ai6why-control", "nth": 0},
+                        {"action": "click", "text": "CIC - CB Warehouse 1"},
+                        {"action": "click", "test_id": "next"}
+                    ],
+                    "wait_for_selector": "body",
+                    "viewport": {"width": 1440, "height": 800},
+                    "max_depth": 50
+                }
+            ]
+        }
+    }
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -309,6 +391,7 @@ def root():
             "figma_url": "POST /api/figma/extract (accepts full Figma URL)",
             "figma": "GET /extract/{file_key}",
             "web": "POST /api/extract",
+            "compare": "POST /api/compare/urls (compare Figma vs Web)",
             "screenshot": "GET /api/extract/{screenshot_id}/image",
             "docs": "/docs",
         },
@@ -584,6 +667,100 @@ async def get_screenshot_image(screenshot_id: str):
             "Cache-Control": "public, max-age=3600",
         },
     )
+
+
+@app.post("/api/compare/urls")
+async def compare_figma_web_urls(request: CompareUrlsRequest):
+    """
+    Compare Figma design with web implementation using URLs.
+    
+    Extracts design data from both Figma and the live web page, then compares
+    them to identify visual differences. Figma is treated as the source of truth.
+    
+    **Request Body:**
+    - **figma_url**: Full Figma URL with optional node-id parameter
+    - **web_url**: Target web URL to compare against
+    - **login_url**: Login page URL if authentication is required
+    - **credentials**: Login credentials {username, password, selectors}
+    - **post_login_steps**: Steps to execute after login (workspace selection, etc.)
+    - **wait_for_selector**: Wait for element before extraction (for SPAs)
+    - **viewport**: Browser viewport dimensions
+    - **max_depth**: Maximum DOM traversal depth
+    - **tolerance**: Custom tolerance values for comparison
+    
+    **Response:**
+    - **summary**: Overview with total differences, errors, warnings, and category counts
+    - **by_category**: Differences grouped by category (text, spacing, padding, etc.)
+    - **differences**: Flat list of all differences with element details
+    
+    **Categories:**
+    - text: Font family, size, weight, color, content differences
+    - spacing: Gap and margin differences
+    - padding: Padding differences (top, right, bottom, left)
+    - size: Width/height differences
+    - color: Background and border color differences
+    - missing_elements: Elements in Figma that are missing in web
+    """
+    try:
+        parsed = parse_figma_url(request.figma_url)
+        file_key = parsed["file_key"]
+        node_id = parsed["node_id"]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    figma_token = get_token(request.figma_token)
+    
+    try:
+        figma_data = fetch_figma_file(file_key, figma_token, node_id)
+        figma_extracted = extract_design_data(figma_data, file_key, node_id)
+        figma_extracted["source"] = "figma"
+        figma_extracted["figma_url"] = request.figma_url
+    except SystemExit as e:
+        raise HTTPException(status_code=400, detail=f"Figma extraction failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Figma extraction failed: {str(e)}")
+    
+    try:
+        credentials_dict = None
+        if request.credentials:
+            credentials_dict = {
+                "username": request.credentials.username,
+                "password": request.credentials.password,
+                "selectors": request.credentials.selectors,
+            }
+        
+        post_login_steps = None
+        if request.post_login_steps:
+            post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
+        
+        web_extracted = await extract_from_url(
+            url=str(request.web_url),
+            credentials=credentials_dict,
+            login_url=str(request.login_url) if request.login_url else None,
+            root_selector=request.root_selector,
+            max_depth=request.max_depth,
+            viewport=request.viewport,
+            wait_for_selector=request.wait_for_selector,
+            screenshot=False,
+            post_login_steps=post_login_steps,
+        )
+        web_extracted["source"] = "web"
+        web_extracted["web_url"] = str(request.web_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Web extraction failed: {str(e)}")
+    
+    try:
+        comparator = DesignComparator(figma_extracted, web_extracted)
+        
+        if request.tolerance:
+            comparator.tolerance.update(request.tolerance)
+        
+        results = comparator.compare_all()
+        
+        return results
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
 
 
 if __name__ == "__main__":
