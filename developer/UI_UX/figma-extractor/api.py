@@ -7,10 +7,15 @@ Enables automated visual comparison between design and implementation.
 """
 
 import os
+import hashlib
+import base64
 from typing import Optional
+from collections import OrderedDict
+from threading import Lock
 
-from fastapi import FastAPI, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 
@@ -18,6 +23,36 @@ from figma_extractor import fetch_figma_file, extract_design_data
 from web_extractor import extract_from_url
 
 load_dotenv()
+
+# Screenshot storage with LRU-like behavior (max 100 screenshots in memory)
+MAX_SCREENSHOT_CACHE = 100
+_screenshot_cache: OrderedDict[str, bytes] = OrderedDict()
+_cache_lock = Lock()
+
+
+def store_screenshot(screenshot_base64: str) -> str:
+    """Store a screenshot and return its unique hash ID."""
+    screenshot_bytes = base64.b64decode(screenshot_base64)
+    screenshot_hash = hashlib.sha256(screenshot_bytes).hexdigest()
+    
+    with _cache_lock:
+        if screenshot_hash in _screenshot_cache:
+            _screenshot_cache.move_to_end(screenshot_hash)
+        else:
+            _screenshot_cache[screenshot_hash] = screenshot_bytes
+            while len(_screenshot_cache) > MAX_SCREENSHOT_CACHE:
+                _screenshot_cache.popitem(last=False)
+    
+    return screenshot_hash
+
+
+def get_screenshot(screenshot_id: str) -> Optional[bytes]:
+    """Retrieve a screenshot by its hash ID."""
+    with _cache_lock:
+        if screenshot_id in _screenshot_cache:
+            _screenshot_cache.move_to_end(screenshot_id)
+            return _screenshot_cache[screenshot_id]
+    return None
 
 app = FastAPI(
     title="Design Extractor API",
@@ -130,6 +165,7 @@ def root():
         "endpoints": {
             "figma": "GET /extract/{file_key}",
             "web": "POST /api/extract",
+            "screenshot": "GET /api/extract/{screenshot_id}/image",
             "docs": "/docs",
         },
     }
@@ -184,6 +220,13 @@ async def extract_web_page(request: WebExtractRequest):
             wait_for_selector=request.wait_for_selector,
             screenshot=request.screenshot,
         )
+        
+        # If screenshot was captured, store it and replace base64 with URL
+        if result.get("screenshot"):
+            screenshot_id = store_screenshot(result["screenshot"])
+            result["screenshot_id"] = screenshot_id
+            result["screenshot_url"] = f"/api/extract/{screenshot_id}/image"
+            del result["screenshot"]
         
         return result
         
@@ -246,12 +289,48 @@ async def extract_web_page_get(
             wait_for_selector=wait_for,
             screenshot=screenshot,
         )
+        
+        # If screenshot was captured, store it and replace base64 with URL
+        if result.get("screenshot"):
+            screenshot_id = store_screenshot(result["screenshot"])
+            result["screenshot_id"] = screenshot_id
+            result["screenshot_url"] = f"/api/extract/{screenshot_id}/image"
+            del result["screenshot"]
+        
         return result
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Web extraction failed: {str(e)}",
         )
+
+
+@app.get("/api/extract/{screenshot_id}/image")
+async def get_screenshot_image(screenshot_id: str):
+    """
+    Retrieve a stored screenshot by its ID.
+    
+    - **screenshot_id**: The unique hash ID returned from extraction endpoints
+    
+    Returns the screenshot as a PNG image.
+    Screenshots are stored in memory with LRU eviction (max 100 cached).
+    """
+    screenshot_bytes = get_screenshot(screenshot_id)
+    
+    if screenshot_bytes is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Screenshot not found. It may have been evicted from cache or the ID is invalid.",
+        )
+    
+    return Response(
+        content=screenshot_bytes,
+        media_type="image/png",
+        headers={
+            "Content-Disposition": f"inline; filename={screenshot_id}.png",
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
 
 
 if __name__ == "__main__":
