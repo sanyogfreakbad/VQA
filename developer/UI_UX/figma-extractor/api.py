@@ -7,11 +7,13 @@ Enables automated visual comparison between design and implementation.
 """
 
 import os
+import re
 import hashlib
 import base64
 from typing import Optional
 from collections import OrderedDict
 from threading import Lock
+from urllib.parse import urlparse, parse_qs
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -65,6 +67,45 @@ def get_screenshot(screenshot_id: str) -> Optional[bytes]:
             return _screenshot_cache[screenshot_id]
     return None
 
+
+def parse_figma_url(figma_url: str) -> dict:
+    """
+    Parse a Figma URL and extract file_key and node_id.
+    
+    Supported URL formats:
+    - https://www.figma.com/design/FILE_KEY/File-Name?node-id=123-456
+    - https://www.figma.com/file/FILE_KEY/File-Name?node-id=123-456
+    - https://figma.com/design/FILE_KEY/...
+    
+    Returns:
+        dict with 'file_key' and 'node_id' (node_id may be None)
+    
+    Raises:
+        ValueError if URL is not a valid Figma URL
+    """
+    parsed = urlparse(figma_url)
+    
+    # Validate it's a Figma URL
+    if not parsed.netloc.endswith("figma.com"):
+        raise ValueError("Not a valid Figma URL. Must be from figma.com")
+    
+    # Extract file_key from path: /design/FILE_KEY/... or /file/FILE_KEY/...
+    path_match = re.match(r"^/(design|file)/([a-zA-Z0-9]+)", parsed.path)
+    if not path_match:
+        raise ValueError("Could not extract file key from Figma URL. Expected format: figma.com/design/FILE_KEY/...")
+    
+    file_key = path_match.group(2)
+    
+    # Extract node-id from query parameters
+    query_params = parse_qs(parsed.query)
+    node_id = query_params.get("node-id", [None])[0]
+    
+    return {
+        "file_key": file_key,
+        "node_id": node_id,
+    }
+
+
 app = FastAPI(
     title="Design Extractor API",
     description="""
@@ -82,6 +123,40 @@ Extract design values from Figma files and live web pages.
 """,
     version="2.0.0",
 )
+
+
+class FigmaExtractRequest(BaseModel):
+    """Request body for Figma URL extraction."""
+    url: str = Field(
+        ...,
+        description="Full Figma URL (e.g., https://www.figma.com/design/FILE_KEY/Name?node-id=123-456)",
+    )
+    screenshot: bool = Field(
+        True,
+        description="Include screenshot of the node/file",
+    )
+    scale: float = Field(
+        2,
+        ge=0.5,
+        le=4,
+        description="Screenshot scale factor (0.5-4, default 2 for retina quality)",
+    )
+    token: Optional[str] = Field(
+        None,
+        description="Figma API token (optional if set in .env)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "url": "https://www.figma.com/design/YQpur6AxxedY8AVPjhVv6C/Procurement-shared-file?node-id=3345-188011",
+                    "screenshot": True,
+                    "scale": 2
+                }
+            ]
+        }
+    }
 
 
 class Credentials(BaseModel):
@@ -174,12 +249,80 @@ def root():
         "message": "Design Extractor API is running",
         "version": "2.0.0",
         "endpoints": {
+            "figma_url": "POST /api/figma/extract (accepts full Figma URL)",
             "figma": "GET /extract/{file_key}",
             "web": "POST /api/extract",
             "screenshot": "GET /api/extract/{screenshot_id}/image",
             "docs": "/docs",
         },
     }
+
+
+@app.post("/api/figma/extract")
+def extract_figma_from_url(request: FigmaExtractRequest):
+    """
+    Extract design data from a Figma file using the full Figma URL.
+    
+    Simply paste the Figma URL and the API will automatically extract
+    the file key and node ID.
+    
+    **Example Request:**
+    ```json
+    {
+        "url": "https://www.figma.com/design/YQpur6AxxedY8AVPjhVv6C/Procurement-shared-file?node-id=3345-188011",
+        "screenshot": true,
+        "scale": 2
+    }
+    ```
+    
+    **Supported URL formats:**
+    - `https://www.figma.com/design/FILE_KEY/Name?node-id=123-456`
+    - `https://www.figma.com/file/FILE_KEY/Name?node-id=123-456`
+    
+    Returns normalized JSON with frames, text, rectangles, and components.
+    If screenshot=true (default), includes screenshot_id and screenshot_url in response.
+    """
+    # Parse the Figma URL
+    try:
+        parsed = parse_figma_url(request.url)
+        file_key = parsed["file_key"]
+        node_id = parsed["node_id"]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    figma_token = get_token(request.token)
+    
+    try:
+        figma_data = fetch_figma_file(file_key, figma_token, node_id)
+        extracted = extract_design_data(figma_data, file_key, node_id)
+        extracted["source"] = "figma"
+        extracted["figma_url"] = request.url
+        
+        # Fetch and store screenshot if requested
+        if request.screenshot:
+            target_node_id = node_id
+            if not target_node_id:
+                document = figma_data.get("document", {})
+                children = document.get("children", [])
+                if children:
+                    target_node_id = children[0].get("id")
+            
+            if target_node_id:
+                image_bytes = fetch_figma_image(file_key, figma_token, target_node_id, scale=request.scale)
+                if image_bytes:
+                    screenshot_id = store_screenshot(image_bytes)
+                    extracted["screenshot_id"] = screenshot_id
+                    extracted["screenshot_url"] = f"/api/extract/{screenshot_id}/image"
+                else:
+                    extracted["screenshot_error"] = "Failed to fetch image from Figma API"
+            else:
+                extracted["screenshot_error"] = "No node available for screenshot"
+        
+        return extracted
+    except SystemExit as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
 
 
 @app.post("/api/extract")
