@@ -44,6 +44,57 @@ def fetch_figma_file(file_key: str, token: str, node_id: str | None = None) -> d
         raise SystemExit(f"Error: Network request failed - {e}")
 
 
+def fetch_figma_image(file_key: str, token: str, node_id: str, scale: float = 2, format: str = "png") -> bytes | None:
+    """
+    Fetch a rendered image of a Figma node via the Images API.
+    
+    Args:
+        file_key: The Figma file key
+        token: Figma API token
+        node_id: The node ID to render (accepts both hyphen and colon format)
+        scale: Image scale factor (1-4, default 2 for retina)
+        format: Image format ('png', 'jpg', 'svg', 'pdf')
+    
+    Returns:
+        Image bytes or None if failed
+    """
+    # Figma API expects node IDs with colons, but URLs often use hyphens
+    # Convert hyphen format (3345-188011) to colon format (3345:188011)
+    normalized_id = node_id.replace("-", ":")
+    
+    url = f"https://api.figma.com/v1/images/{file_key}"
+    headers = {"X-Figma-Token": token}
+    params = {
+        "ids": normalized_id,
+        "scale": scale,
+        "format": format,
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=60)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("err"):
+            print(f"Figma API error: {data.get('err')}", file=sys.stderr)
+            return None
+        
+        images = data.get("images", {})
+        image_url = images.get(normalized_id)
+        
+        if not image_url:
+            print(f"No image URL returned for node {normalized_id}", file=sys.stderr)
+            return None
+        
+        img_response = requests.get(image_url, timeout=60)
+        img_response.raise_for_status()
+        return img_response.content
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch Figma image: {e}", file=sys.stderr)
+        return None
+
+
 def normalize_bounding_box(node: dict) -> dict[str, float]:
     """Extract and normalize absoluteBoundingBox to simple x, y, width, height."""
     bbox = node.get("absoluteBoundingBox", {})

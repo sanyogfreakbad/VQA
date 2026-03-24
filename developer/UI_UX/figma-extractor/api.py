@@ -19,7 +19,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 
-from figma_extractor import fetch_figma_file, extract_design_data
+from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_image
 from web_extractor import extract_from_url
 
 load_dotenv()
@@ -30,9 +30,20 @@ _screenshot_cache: OrderedDict[str, bytes] = OrderedDict()
 _cache_lock = Lock()
 
 
-def store_screenshot(screenshot_base64: str) -> str:
-    """Store a screenshot and return its unique hash ID."""
-    screenshot_bytes = base64.b64decode(screenshot_base64)
+def store_screenshot(screenshot_data: str | bytes) -> str:
+    """Store a screenshot and return its unique hash ID.
+    
+    Args:
+        screenshot_data: Either base64 string or raw bytes
+    
+    Returns:
+        SHA256 hash ID for the screenshot
+    """
+    if isinstance(screenshot_data, str):
+        screenshot_bytes = base64.b64decode(screenshot_data)
+    else:
+        screenshot_bytes = screenshot_data
+    
     screenshot_hash = hashlib.sha256(screenshot_bytes).hexdigest()
     
     with _cache_lock:
@@ -242,6 +253,8 @@ def extract_figma_design(
     file_key: str,
     node_id: Optional[str] = Query(None, description="Specific node/frame ID to extract (e.g., 3345-188011)"),
     token: Optional[str] = Query(None, description="Figma API token (optional if set in .env)"),
+    screenshot: bool = Query(False, description="Include screenshot of the node/file"),
+    scale: float = Query(2, ge=0.5, le=4, description="Screenshot scale factor (0.5-4)"),
 ):
     """
     Extract design data from a Figma file or specific frame.
@@ -249,8 +262,11 @@ def extract_figma_design(
     - **file_key**: The Figma file key from the URL (e.g., ABC123xyz from figma.com/file/ABC123xyz/...)
     - **node_id**: Optional node ID to extract only a specific frame (from node-id= in URL)
     - **token**: Optional Figma API token (uses .env FIGMA_TOKEN if not provided)
+    - **screenshot**: If true, fetches a rendered image of the node
+    - **scale**: Image scale factor for screenshot (default 2 for retina quality)
     
     Returns normalized JSON with frames, text, rectangles, and components.
+    If screenshot=true, includes screenshot_id and screenshot_url in response.
     """
     figma_token = get_token(token)
     
@@ -258,6 +274,29 @@ def extract_figma_design(
         figma_data = fetch_figma_file(file_key, figma_token, node_id)
         extracted = extract_design_data(figma_data, file_key, node_id)
         extracted["source"] = "figma"
+        
+        # Fetch and store screenshot if requested
+        if screenshot:
+            # Use provided node_id or get the first frame from the document
+            target_node_id = node_id
+            if not target_node_id:
+                # Try to get the first canvas/page as default
+                document = figma_data.get("document", {})
+                children = document.get("children", [])
+                if children:
+                    target_node_id = children[0].get("id")
+            
+            if target_node_id:
+                image_bytes = fetch_figma_image(file_key, figma_token, target_node_id, scale=scale)
+                if image_bytes:
+                    screenshot_id = store_screenshot(image_bytes)
+                    extracted["screenshot_id"] = screenshot_id
+                    extracted["screenshot_url"] = f"/api/extract/{screenshot_id}/image"
+                else:
+                    extracted["screenshot_error"] = "Failed to fetch image from Figma API"
+            else:
+                extracted["screenshot_error"] = "No node available for screenshot"
+        
         return extracted
     except SystemExit as e:
         raise HTTPException(status_code=400, detail=str(e))
