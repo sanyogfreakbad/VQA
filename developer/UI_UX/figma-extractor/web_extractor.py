@@ -423,6 +423,104 @@ async def execute_login(
         return False
 
 
+async def execute_post_login_steps(
+    page: Page,
+    steps: list[dict],
+    timeout: int = 30000,
+) -> bool:
+    """
+    Execute post-login steps like workspace selection.
+    
+    Each step can be:
+    - {"action": "wait_for", "selector": ".some-element"} - Wait for element
+    - {"action": "click", "selector": "button"} - Click an element
+    - {"action": "click", "text": "Next"} - Click element by text
+    - {"action": "click", "role": "button", "name": "Sign In"} - Click by ARIA role
+    - {"action": "click", "test_id": "next"} - Click by data-testid
+    - {"action": "click", "nth": 0, "selector": ".dropdown"} - Click nth matching element
+    - {"action": "select", "selector": "select", "value": "option_value"} - Select dropdown by value
+    - {"action": "select", "selector": "select", "index": 1} - Select dropdown by index
+    - {"action": "select", "selector": "select", "label": "Option Text"} - Select dropdown by label
+    - {"action": "fill", "selector": "input", "value": "text"} - Fill input field
+    - {"action": "wait", "duration": 2000} - Wait for specified milliseconds
+    """
+    try:
+        for step in steps:
+            action = step.get("action", "")
+            selector = step.get("selector")
+            text = step.get("text")
+            role = step.get("role")
+            name = step.get("name")
+            test_id = step.get("test_id")
+            nth = step.get("nth")
+            
+            if action == "wait_for":
+                if selector:
+                    await page.wait_for_selector(selector, timeout=timeout)
+                elif text:
+                    await page.get_by_text(text).wait_for(timeout=timeout)
+                elif test_id:
+                    await page.get_by_test_id(test_id).wait_for(timeout=timeout)
+            
+            elif action == "click":
+                # Determine what to click based on provided parameters
+                if role and name:
+                    await page.get_by_role(role, name=name).click(timeout=timeout)
+                elif test_id:
+                    await page.get_by_test_id(test_id).click(timeout=timeout)
+                elif selector and nth is not None:
+                    await page.locator(selector).nth(nth).click(timeout=timeout)
+                elif selector:
+                    await page.locator(selector).first.click(timeout=timeout)
+                elif text:
+                    # Try exact match first, then partial
+                    try:
+                        await page.get_by_text(text, exact=True).click(timeout=timeout)
+                    except Exception:
+                        await page.get_by_text(text).first.click(timeout=timeout)
+                
+                # Wait for any navigation/loading
+                try:
+                    await page.wait_for_load_state("networkidle", timeout=5000)
+                except Exception:
+                    pass
+            
+            elif action == "select":
+                if not selector:
+                    continue
+                    
+                if "value" in step:
+                    await page.select_option(selector, value=step["value"], timeout=timeout)
+                elif "index" in step:
+                    await page.select_option(selector, index=step["index"], timeout=timeout)
+                elif "label" in step:
+                    await page.select_option(selector, label=step["label"], timeout=timeout)
+            
+            elif action == "fill":
+                if selector and "value" in step:
+                    await page.fill(selector, step["value"], timeout=timeout)
+                elif test_id and "value" in step:
+                    await page.get_by_test_id(test_id).fill(step["value"], timeout=timeout)
+            
+            elif action == "wait":
+                duration = step.get("duration", 1000)
+                await page.wait_for_timeout(duration)
+            
+            # Small delay between steps for stability
+            await page.wait_for_timeout(500)
+        
+        # Wait for page to stabilize after all steps
+        try:
+            await page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:
+            pass
+        return True
+        
+    except Exception as e:
+        print(f"Post-login step error: {e}")
+        return False
+
+
 async def wait_for_react_render(page: Page, timeout: int = 10000) -> None:
     """Wait for React/SPA to finish rendering."""
     try:
@@ -457,6 +555,7 @@ async def extract_from_url(
     viewport: Optional[dict] = None,
     wait_for_selector: Optional[str] = None,
     screenshot: bool = False,
+    post_login_steps: Optional[list[dict]] = None,
 ) -> dict[str, Any]:
     """
     Extract visual properties from a web page.
@@ -470,6 +569,7 @@ async def extract_from_url(
         viewport: Custom viewport {width, height}
         wait_for_selector: Wait for specific element before extraction
         screenshot: Capture screenshot as base64
+        post_login_steps: List of actions to perform after login (e.g., workspace selection)
     
     Returns:
         Figma-compatible JSON structure
@@ -499,6 +599,12 @@ async def extract_from_url(
                 
                 if not login_success:
                     raise Exception("Login failed - could not find login form elements")
+                
+                # Execute post-login steps (e.g., workspace selection)
+                if post_login_steps:
+                    steps_success = await execute_post_login_steps(page, post_login_steps)
+                    if not steps_success:
+                        print("Warning: Some post-login steps may have failed")
                 
                 # Navigate to target if different from login
                 if login_url and login_url != url:

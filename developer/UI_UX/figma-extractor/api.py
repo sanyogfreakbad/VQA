@@ -169,6 +169,54 @@ class Credentials(BaseModel):
     )
 
 
+class PostLoginStep(BaseModel):
+    """A single post-login action step."""
+    action: str = Field(
+        ...,
+        description="Action type: 'wait_for', 'click', 'select', 'fill', 'wait'",
+    )
+    selector: Optional[str] = Field(
+        None,
+        description="CSS selector for the target element",
+    )
+    text: Optional[str] = Field(
+        None,
+        description="Text content to match (for click actions)",
+    )
+    role: Optional[str] = Field(
+        None,
+        description="ARIA role for element (e.g., 'button', 'link', 'textbox')",
+    )
+    name: Optional[str] = Field(
+        None,
+        description="Accessible name for role-based selection (used with 'role')",
+    )
+    test_id: Optional[str] = Field(
+        None,
+        description="data-testid attribute value",
+    )
+    nth: Optional[int] = Field(
+        None,
+        description="Index when multiple elements match (0-based, used with selector)",
+    )
+    value: Optional[str] = Field(
+        None,
+        description="Value for select/fill actions",
+    )
+    label: Optional[str] = Field(
+        None,
+        description="Label text for select dropdown",
+    )
+    index: Optional[int] = Field(
+        None,
+        description="Index for select dropdown (0-based)",
+    )
+    duration: Optional[int] = Field(
+        None,
+        description="Duration in milliseconds (for wait action)",
+    )
+
+
 class WebExtractRequest(BaseModel):
     """Request body for web page extraction."""
     url: HttpUrl = Field(..., description="Target URL to extract visual properties from")
@@ -179,6 +227,10 @@ class WebExtractRequest(BaseModel):
     login_url: Optional[HttpUrl] = Field(
         None,
         description="URL of login page if different from target URL",
+    )
+    post_login_steps: Optional[list[PostLoginStep]] = Field(
+        None,
+        description="Steps to execute after login (e.g., workspace/organization selection)",
     )
     root_selector: Optional[str] = Field(
         None,
@@ -214,6 +266,11 @@ class WebExtractRequest(BaseModel):
                         "password": "password123"
                     },
                     "login_url": "https://example.com/login",
+                    "post_login_steps": [
+                        {"action": "wait_for", "text": "Please select your work space"},
+                        {"action": "select", "selector": "select", "index": 1},
+                        {"action": "click", "text": "Next"}
+                    ],
                     "wait_for_selector": ".dashboard-content",
                     "viewport": {"width": 1920, "height": 1080}
                 }
@@ -341,11 +398,19 @@ async def extract_web_page(request: WebExtractRequest):
     - **url**: Target URL to extract from
     - **credentials**: Optional login credentials {username, password, selectors}
     - **login_url**: Login page URL if different from target
+    - **post_login_steps**: Steps to execute after login (e.g., workspace selection)
     - **root_selector**: CSS selector to limit extraction scope
     - **max_depth**: Maximum DOM depth to traverse (1-100)
     - **viewport**: Browser viewport dimensions
     - **wait_for_selector**: Wait for element before extracting (for SPAs)
     - **screenshot**: Include base64 screenshot in response
+    
+    **Post-Login Steps Actions:**
+    - `wait_for`: Wait for element - {action: "wait_for", selector: ".element"} or {action: "wait_for", text: "Some text"}
+    - `click`: Click element - {action: "click", selector: "button"} or {action: "click", text: "Next"}
+    - `select`: Select dropdown - {action: "select", selector: "select", index: 1} or {action: "select", selector: "select", label: "Option"}
+    - `fill`: Fill input - {action: "fill", selector: "input", value: "text"}
+    - `wait`: Pause - {action: "wait", duration: 2000}
     
     **Response Schema:**
     Returns nodes with Figma-compatible properties:
@@ -364,6 +429,11 @@ async def extract_web_page(request: WebExtractRequest):
                 "selectors": request.credentials.selectors,
             }
         
+        # Convert post_login_steps to list of dicts
+        post_login_steps = None
+        if request.post_login_steps:
+            post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
+        
         result = await extract_from_url(
             url=str(request.url),
             credentials=credentials_dict,
@@ -373,6 +443,7 @@ async def extract_web_page(request: WebExtractRequest):
             viewport=request.viewport,
             wait_for_selector=request.wait_for_selector,
             screenshot=request.screenshot,
+            post_login_steps=post_login_steps,
         )
         
         # If screenshot was captured, store it and replace base64 with URL
