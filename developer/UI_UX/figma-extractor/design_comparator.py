@@ -116,6 +116,21 @@ class DiffItem:
     web_value: Any
     delta: Any
     severity: str = "info"
+    web_position: Optional[Dict[str, float]] = None
+
+
+def _web_pos(elem: Optional['NormalizedElement']) -> Optional[Dict[str, float]]:
+    """Extract position dict from a NormalizedElement (for web elements)."""
+    if elem is None:
+        return None
+    if elem.x is None and elem.y is None:
+        return None
+    return {
+        "x": round(elem.x, 2) if elem.x is not None else 0,
+        "y": round(elem.y, 2) if elem.y is not None else 0,
+        "width": round(elem.width, 2) if elem.width is not None else 0,
+        "height": round(elem.height, 2) if elem.height is not None else 0,
+    }
 
 
 def rgb_to_hex(color: Dict) -> Optional[str]:
@@ -616,6 +631,7 @@ class DesignComparator:
         """Compare properties of matched text elements."""
         elem_name = figma.name or figma.text or "Unknown"
         elem_text = figma.text
+        pos = _web_pos(web)
         
         f_text_norm = normalize_text(figma.text or "")
         w_text_norm = normalize_text(web.text or "")
@@ -629,7 +645,8 @@ class DesignComparator:
                     figma_value=figma.text,
                     web_value=web.text,
                     delta="Text differs",
-                    severity="error"
+                    severity="error",
+                    web_position=pos,
                 ))
         
         if figma.font_family and web.font_family:
@@ -643,7 +660,8 @@ class DesignComparator:
                     figma_value=figma.font_family,
                     web_value=web.font_family,
                     delta=f"{figma.font_family} → {web.font_family}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.font_size and web.font_size:
@@ -656,7 +674,8 @@ class DesignComparator:
                     figma_value=f"{figma.font_size}px",
                     web_value=f"{web.font_size}px",
                     delta=f"{diff:+.1f}px",
-                    severity="warning" if diff > 4 else "info"
+                    severity="warning" if diff > 4 else "info",
+                    web_position=pos,
                 ))
         
         if figma.font_weight and web.font_weight:
@@ -668,7 +687,8 @@ class DesignComparator:
                     figma_value=figma.font_weight,
                     web_value=web.font_weight,
                     delta=f"{figma.font_weight} → {web.font_weight}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.text_color and web.text_color:
@@ -681,7 +701,8 @@ class DesignComparator:
                     figma_value=figma.text_color,
                     web_value=web.text_color,
                     delta=f"Distance: {dist:.2f}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
     
     def _compare_report_cards(self):
@@ -741,6 +762,7 @@ class DesignComparator:
         """Compare properties of matched report cards."""
         elem_name = figma.text[:40] if figma.text else "Report Card"
         elem_text = figma.text
+        pos = _web_pos(web)
         
         f_text = (figma.text or "").strip()
         w_text = (web.text or "").strip()
@@ -752,7 +774,8 @@ class DesignComparator:
                 figma_value=f_text,
                 web_value=w_text,
                 delta=self._describe_text_diff(f_text, w_text),
-                severity="error"
+                severity="error",
+                web_position=pos,
             ))
         
         if figma.font_weight and web.font_weight and figma.font_weight != web.font_weight:
@@ -763,7 +786,8 @@ class DesignComparator:
                 figma_value=figma.font_weight,
                 web_value=web.font_weight,
                 delta=f"{figma.font_weight} → {web.font_weight}",
-                severity="warning"
+                severity="warning",
+                web_position=pos,
             ))
         
         if figma.font_family and web.font_family:
@@ -777,7 +801,8 @@ class DesignComparator:
                     figma_value=figma.font_family,
                     web_value=web.font_family,
                     delta=f"{figma.font_family} → {web.font_family}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.text_color and web.text_color:
@@ -790,7 +815,8 @@ class DesignComparator:
                     figma_value=figma.text_color,
                     web_value=web.text_color,
                     delta=f"Distance: {dist:.2f}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.width_ratio and web.width_ratio:
@@ -803,7 +829,8 @@ class DesignComparator:
                     figma_value=f"{figma.width_ratio:.2%}",
                     web_value=f"{web.width_ratio:.2%}",
                     delta=f"{diff:.2%}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.height and web.height:
@@ -816,7 +843,8 @@ class DesignComparator:
                     figma_value=f"{figma.height}px",
                     web_value=f"{web.height}px",
                     delta=f"{diff:+.0f}px",
-                    severity="info"
+                    severity="info",
+                    web_position=pos,
                 ))
         
         for prop, diff_type in [
@@ -838,7 +866,8 @@ class DesignComparator:
                         figma_value=f"{f_val}px",
                         web_value=f"{w_val}px",
                         delta=f"{diff:+.0f}px",
-                        severity="warning" if diff > 8 else "info"
+                        severity="warning" if diff > 8 else "info",
+                        web_position=pos,
                     ))
         
         if figma.bg_color and web.bg_color:
@@ -851,7 +880,8 @@ class DesignComparator:
                     figma_value=figma.bg_color,
                     web_value=web.bg_color,
                     delta=f"Distance: {dist:.2f}",
-                    severity="warning"
+                    severity="warning",
+                    web_position=pos,
                 ))
         
         if figma.border_color and web.border_color:
@@ -864,7 +894,8 @@ class DesignComparator:
                     figma_value=figma.border_color,
                     web_value=web.border_color,
                     delta=f"Distance: {dist:.2f}",
-                    severity="info"
+                    severity="info",
+                    web_position=pos,
                 ))
         
         if figma.border_radius is not None and web.border_radius is not None:
@@ -877,7 +908,8 @@ class DesignComparator:
                     figma_value=f"{figma.border_radius}px",
                     web_value=f"{web.border_radius}px",
                     delta=f"{diff:+.0f}px",
-                    severity="info"
+                    severity="info",
+                    web_position=pos,
                 ))
         
     
@@ -911,7 +943,8 @@ class DesignComparator:
                         figma_value=f"{f_gap}px",
                         web_value=f"{w_gap}px (estimated)",
                         delta=f"{w_gap - f_gap:+.0f}px",
-                        severity="warning"
+                        severity="warning",
+                        web_position=_web_pos(web_content),
                     ))
     
     def _describe_text_diff(self, figma_text: str, web_text: str) -> str:
@@ -1010,7 +1043,7 @@ class DesignComparator:
             formatted_by_category[cat] = []
             for diff in diffs:
                 sub_type = self._get_sub_type(diff.diff_type)
-                formatted_by_category[cat].append({
+                item = {
                     "element": diff.element_name,
                     "text": diff.element_text[:50] + "..." if diff.element_text and len(diff.element_text) > 50 else diff.element_text,
                     "sub_type": sub_type,
@@ -1018,7 +1051,10 @@ class DesignComparator:
                     "web_value": diff.web_value,
                     "delta": diff.delta,
                     "severity": diff.severity,
-                })
+                }
+                if diff.web_position:
+                    item["web_position"] = diff.web_position
+                formatted_by_category[cat].append(item)
         
         ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
                             "components", "size", "missing_elements"]
