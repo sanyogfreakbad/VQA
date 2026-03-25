@@ -59,6 +59,22 @@ class DiffType(str, Enum):
     ELEMENT_ORDER = "element_order"
 
 
+# Placeholder text patterns to skip in missing-element reports
+_PLACEHOLDER_PATTERNS = [
+    "lorem ipsum",
+    "dolor sit amet",
+    "consectetur adipiscing",
+]
+
+
+def _is_placeholder_text(text: Optional[str]) -> bool:
+    """Check if text is placeholder/lorem ipsum content."""
+    if not text:
+        return False
+    lower = text.strip().lower()
+    return any(pattern in lower for pattern in _PLACEHOLDER_PATTERNS)
+
+
 @dataclass
 class NormalizedElement:
     """Normalized element format for comparison."""
@@ -548,7 +564,7 @@ class DesignComparator:
         return self._format_results()
     
     def _deduplicate_diffs(self):
-        """Remove duplicate diff entries and resolve conflicts."""
+        """Remove duplicate diff entries, resolve conflicts, and filter placeholder text."""
         seen_keys = set()
         seen_texts_missing = set()
         unique_diffs = []
@@ -563,6 +579,10 @@ class DesignComparator:
                 texts_with_other_diffs.add(text_key)
         
         for diff in other_diffs:
+            # Skip diffs where the element name is placeholder text
+            if _is_placeholder_text(diff.element_name):
+                continue
+            
             text_key = normalize_text(diff.element_text or "")
             key = (text_key, diff.diff_type, str(diff.figma_value), str(diff.web_value))
             
@@ -571,6 +591,10 @@ class DesignComparator:
                 unique_diffs.append(diff)
         
         for diff in missing_diffs:
+            # Skip missing-element diffs where the element name is placeholder text
+            if _is_placeholder_text(diff.element_name):
+                continue
+            
             text_key = normalize_text(diff.element_text or "")
             
             if text_key in texts_with_other_diffs:
