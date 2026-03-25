@@ -159,6 +159,195 @@ DOM_WALKER_SCRIPT = """
         return text.trim();
     }
     
+    /**
+     * Find the associated interactive element (input/select/textarea) for a
+     * label-like element. Searches via:
+     *   1. <label for="id">  →  document.getElementById(id)
+     *   2. <label> wrapping an input  →  label.querySelector('input,select,textarea')
+     *   3. Parent/sibling scan: walk up to a form-field wrapper, then find
+     *      the first input/select/textarea inside it
+     *   4. aria-controls / aria-describedby pointing to an input
+     *
+     * Returns the input element or null.
+     */
+    function findAssociatedInput(el) {
+        // 1. <label for="...">
+        if (el.tagName === 'LABEL' && el.htmlFor) {
+            const target = document.getElementById(el.htmlFor);
+            if (target) return target;
+        }
+        
+        // 2. Label wrapping an input
+        if (el.tagName === 'LABEL') {
+            const inner = el.querySelector('input, select, textarea');
+            if (inner) return inner;
+        }
+        
+        // 3. Walk up (max 4 levels) looking for a wrapper that contains an input
+        let parent = el.parentElement;
+        for (let i = 0; i < 4 && parent; i++) {
+            const input = parent.querySelector('input, select, textarea, [role="combobox"], [role="listbox"], [contenteditable="true"]');
+            if (input && input !== el) return input;
+            parent = parent.parentElement;
+        }
+        
+        // 4. aria-controls
+        const controls = el.getAttribute('aria-controls');
+        if (controls) {
+            const target = document.getElementById(controls);
+            if (target) return target;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * For any element, find the nearest interactive ancestor or self.
+     * Useful for text nodes inside buttons, links, etc.
+     * Walks up max 3 levels looking for button, a, input, select, [role=button], etc.
+     * Returns the interactive element or null.
+     */
+    function findNearestInteractive(el) {
+        const interactiveTags = new Set(['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA']);
+        const interactiveRoles = new Set(['button', 'link', 'tab', 'menuitem', 'option', 'switch', 'checkbox', 'radio', 'combobox']);
+        
+        let current = el;
+        for (let i = 0; i < 4 && current; i++) {
+            if (interactiveTags.has(current.tagName)) return current;
+            const r = current.getAttribute('role');
+            if (r && interactiveRoles.has(r)) return current;
+            if (current.getAttribute('data-testid')) return current;
+            current = current.parentElement;
+        }
+        return null;
+    }
+    
+    /**
+     * Generate a best-effort XPath locator for an element.
+     * Priority order (first match wins):
+     *   1. //*[@id="..."]                                   — HTML id
+     *   2. //*[@data-testid="..."]                          — test id
+     *   3. //tag[@name="..."]                               — name attr (forms)
+     *   4. //tag[@role="..." and @aria-label="..."]         — ARIA
+     *   5. //tag[@role="..." and contains(text(),"...")]    — role + text
+     *   6. //tag[@placeholder="..."]                        — placeholder
+     *   7. //tag[text()="..."]  or contains(text(),"...")   — text content
+     *   8. //tag[@aria-label="..."]                         — aria-label alone
+     *   9. //tag[@class="..."]                              — full class (fallback)
+     * Text is trimmed to 60 chars max for readability.
+     */
+    function generateLocator(el) {
+        const tag = el.tagName.toLowerCase();
+        
+        // 1. id — most reliable
+        const elId = el.id;
+        if (elId) {
+            return '//*[@id="' + elId + '"]';
+        }
+        
+        // 2. data-testid
+        const testId = el.getAttribute('data-testid') || el.getAttribute('data-test-id') || el.getAttribute('data-cy');
+        if (testId) {
+            return '//*[@data-testid="' + testId + '"]';
+        }
+        
+        // 3. name attribute (inputs, selects, textareas)
+        const nameAttr = el.getAttribute('name');
+        if (nameAttr && ['INPUT','SELECT','TEXTAREA','BUTTON'].includes(el.tagName)) {
+            return '//' + tag + '[@name="' + nameAttr + '"]';
+        }
+        
+        // Gather text (direct text only, trimmed, max 60 chars)
+        const directText = getTextContent(el);
+        const trimText = directText.length > 60 ? directText.substring(0, 60) : directText;
+        
+        // Gather ARIA info
+        const role = el.getAttribute('role');
+        const ariaLabel = el.getAttribute('aria-label');
+        
+        // 4. role + aria-label
+        if (role && ariaLabel) {
+            return '//' + tag + '[@role="' + role + '" and @aria-label="' + ariaLabel + '"]';
+        }
+        
+        // 5. role + text
+        if (role && trimText) {
+            if (directText === trimText) {
+                return '//' + tag + '[@role="' + role + '" and text()=\\'' + trimText + '\\']';
+            }
+            return '//' + tag + '[@role="' + role + '" and contains(text(),\\'' + trimText + '\\')]';
+        }
+        
+        // 6. placeholder
+        const placeholder = el.getAttribute('placeholder');
+        if (placeholder) {
+            return '//' + tag + '[@placeholder="' + placeholder + '"]';
+        }
+        
+        // 7. text content
+        if (trimText) {
+            if (directText === trimText && directText.length <= 50) {
+                return '//' + tag + '[text()=\\'' + trimText + '\\']';
+            }
+            if (trimText.length >= 3) {
+                return '//' + tag + '[contains(text(),\\'' + trimText + '\\')]';
+            }
+        }
+        
+        // 8. aria-label alone
+        if (ariaLabel) {
+            return '//' + tag + '[@aria-label="' + ariaLabel + '"]';
+        }
+        
+        // 9. class fallback — use first meaningful class (skip hash-like)
+        const className = el.className && typeof el.className === 'string' ? el.className : '';
+        if (className) {
+            const classes = className.split(/\\s+/).filter(c => c.length > 0 && c.length < 50);
+            if (classes.length > 0) {
+                return '//' + tag + '[contains(@class,"' + classes[0] + '")]';
+            }
+        }
+        
+        // 10. bare tag (last resort)
+        return '//' + tag;
+    }
+    
+    /**
+     * For a given element, produce the most automation-useful locator.
+     *
+     * If the element is a label/span/p/h-tag that labels a form field,
+     * resolve to the associated input and return that input's locator.
+     *
+     * If the element is text inside a button/link, resolve up to
+     * the interactive parent.
+     *
+     * Otherwise return the element's own locator.
+     */
+    function resolveLocator(el) {
+        const tag = el.tagName;
+        const labelTags = new Set(['LABEL', 'SPAN', 'P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LEGEND']);
+        
+        // For label-like elements, try to find the associated input
+        if (labelTags.has(tag)) {
+            const input = findAssociatedInput(el);
+            if (input) {
+                return generateLocator(input);
+            }
+        }
+        
+        // For text inside interactive elements (button text, link text), 
+        // resolve up to the interactive parent
+        const textTags = new Set(['SPAN', 'STRONG', 'EM', 'B', 'I', 'SMALL']);
+        if (textTags.has(tag)) {
+            const interactive = findNearestInteractive(el);
+            if (interactive && interactive !== el) {
+                return generateLocator(interactive);
+            }
+        }
+        
+        return generateLocator(el);
+    }
+    
     function walkDOM(el, depth = 0, parentPath = '') {
         if (depth > config.maxDepth) return;
         if (!el || el.nodeType !== Node.ELEMENT_NODE) return;
@@ -183,6 +372,15 @@ DOM_WALKER_SCRIPT = """
         const className = el.className && typeof el.className === 'string' ? el.className : '';
         const elId = el.id || '';
         
+        // Generate XPath locator (resolves labels to their inputs, text to interactive parents)
+        const locator = resolveLocator(el);
+        
+        // Collect automation-relevant attributes
+        const dataTestId = el.getAttribute('data-testid') || el.getAttribute('data-test-id') || el.getAttribute('data-cy') || '';
+        const role = el.getAttribute('role') || '';
+        const ariaLabel = el.getAttribute('aria-label') || '';
+        const nameAttr = el.getAttribute('name') || '';
+        
         const nodeData = {
             id: currentId,
             tagName: tagName,
@@ -191,6 +389,11 @@ DOM_WALKER_SCRIPT = """
             path: path,
             textContent: textContent,
             depth: depth,
+            locator: locator,
+            dataTestId: dataTestId,
+            role: role,
+            ariaLabel: ariaLabel,
+            nameAttr: nameAttr,
             boundingBox: {
                 x: rect.x + window.scrollX,
                 y: rect.y + window.scrollY,
@@ -267,6 +470,14 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
         "id": raw_node.get("id"),
         "name": " ".join(name_parts),
         "type": node_type,
+        "tagName": tag_name,
+        "className": raw_node.get("className", ""),
+        "elementId": raw_node.get("elementId", ""),
+        "locator": raw_node.get("locator", ""),
+        "dataTestId": raw_node.get("dataTestId", ""),
+        "role": raw_node.get("role", ""),
+        "ariaLabel": raw_node.get("ariaLabel", ""),
+        "nameAttr": raw_node.get("nameAttr", ""),
         "x": round(bbox.get("x", 0), 2),
         "y": round(bbox.get("y", 0), 2),
         "width": round(bbox.get("width", 0), 2),
