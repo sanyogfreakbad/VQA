@@ -21,11 +21,16 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field, HttpUrl
 from dotenv import load_dotenv
 
+import logging
+
 from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_image
 from web_extractor import extract_from_url
 from design_comparator import DesignComparator
+from gemini_refinement import GeminiRefinementLayer
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Screenshot storage with LRU-like behavior (max 100 screenshots in memory)
 MAX_SCREENSHOT_CACHE = 100
@@ -330,6 +335,17 @@ class CompareUrlsRequest(BaseModel):
         description="Figma API token (optional if set in .env)",
     )
 
+    # ---- Gemini refinement fields ----
+    use_gemini: bool = Field(
+        False,
+        description="Enable Gemini vision refinement layer. "
+                    "Sends screenshots + comparison JSON to Gemini for visual validation.",
+    )
+    gemini_model: str = Field(
+        "gemini-2.5-flash",
+        description="Gemini model to use for visual refinement (uses GEMINI_API_KEY from .env)",
+    )
+
     model_config = {
         "json_schema_extra": {
             "examples": [
@@ -354,11 +370,33 @@ class CompareUrlsRequest(BaseModel):
                     ],
                     "wait_for_selector": "body",
                     "viewport": {"width": 1440, "height": 800},
-                    "max_depth": 50
+                    "max_depth": 50,
+                    "use_gemini": True
                 }
             ]
         }
     }
+
+
+class RefineRequest(BaseModel):
+    """Standalone request to refine existing comparison results with Gemini."""
+    comparison_results: dict = Field(
+        ...,
+        description="The JSON output from /api/compare/urls",
+    )
+    figma_screenshot_id: str = Field(
+        ...,
+        description="Screenshot ID of the Figma design (from extraction endpoint)",
+    )
+    web_screenshot_id: str = Field(
+        ...,
+        description="Screenshot ID of the web page (from extraction endpoint)",
+    )
+    gemini_model: str = Field(
+        "gemini-2.5-flash",
+        description="Gemini model to use",
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -386,12 +424,13 @@ def root():
     return {
         "status": "ok",
         "message": "Design Extractor API is running",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "endpoints": {
             "figma_url": "POST /api/figma/extract (accepts full Figma URL)",
             "figma": "GET /extract/{file_key}",
             "web": "POST /api/extract",
-            "compare": "POST /api/compare/urls (compare Figma vs Web)",
+            "compare": "POST /api/compare/urls (compare Figma vs Web, use_gemini=true for AI refinement)",
+            "refine": "POST /api/refine (standalone Gemini refinement with cached screenshots)",
             "screenshot": "GET /api/extract/{screenshot_id}/image",
             "docs": "/docs",
         },
@@ -673,53 +712,60 @@ async def get_screenshot_image(screenshot_id: str):
 async def compare_figma_web_urls(request: CompareUrlsRequest):
     """
     Compare Figma design with web implementation using URLs.
-    
-    Extracts design data from both Figma and the live web page, then compares
-    them to identify visual differences. Figma is treated as the source of truth.
-    
-    **Request Body:**
-    - **figma_url**: Full Figma URL with optional node-id parameter
-    - **web_url**: Target web URL to compare against
-    - **login_url**: Login page URL if authentication is required
-    - **credentials**: Login credentials {username, password, selectors}
-    - **post_login_steps**: Steps to execute after login (workspace selection, etc.)
-    - **wait_for_selector**: Wait for element before extraction (for SPAs)
-    - **viewport**: Browser viewport dimensions
-    - **max_depth**: Maximum DOM traversal depth
-    - **tolerance**: Custom tolerance values for comparison
-    
-    **Response:**
-    - **summary**: Overview with total differences, errors, warnings, and category counts
-    - **by_category**: Differences grouped by category (text, spacing, padding, etc.)
-    - **differences**: Flat list of all differences with element details
-    
-    **Categories:**
-    - text: Font family, size, weight, color, content differences
-    - spacing: Gap and margin differences
-    - padding: Padding differences (top, right, bottom, left)
-    - size: Width/height differences
-    - color: Background and border color differences
-    - missing_elements: Elements in Figma that are missing in web
+
+    Set **use_gemini=true** to enable the Gemini vision refinement layer.
+    When enabled, the API will:
+    1. Run the normal DOM-based comparison
+    2. Capture screenshots of both Figma and web
+    3. Send comparison JSON + both screenshots to Gemini
+    4. Gemini validates findings, removes false positives, and detects
+       visual issues the DOM comparator missed (icons, images, layout)
+    5. Return merged results with a `gemini_refinement` metadata block
+
+    New Gemini-found issues are tagged with `"source": "gemini_visual"`.
     """
+    # --- Step 1: Parse Figma URL ---
     try:
         parsed = parse_figma_url(request.figma_url)
         file_key = parsed["file_key"]
         node_id = parsed["node_id"]
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
     figma_token = get_token(request.figma_token)
-    
+
+    # --- Step 2: Extract Figma data + screenshot ---
+    figma_screenshot_bytes = None
     try:
         figma_data = fetch_figma_file(file_key, figma_token, node_id)
         figma_extracted = extract_design_data(figma_data, file_key, node_id)
         figma_extracted["source"] = "figma"
         figma_extracted["figma_url"] = request.figma_url
+
+        # Always capture Figma screenshot when Gemini is enabled
+        target_node_id = node_id
+        if not target_node_id:
+            document = figma_data.get("document", {})
+            children = document.get("children", [])
+            if children:
+                target_node_id = children[0].get("id")
+
+        if target_node_id:
+            figma_screenshot_bytes = fetch_figma_image(
+                file_key, figma_token, target_node_id, scale=2
+            )
+            if figma_screenshot_bytes:
+                figma_ss_id = store_screenshot(figma_screenshot_bytes)
+                figma_extracted["screenshot_id"] = figma_ss_id
+                figma_extracted["screenshot_url"] = f"/api/extract/{figma_ss_id}/image"
+
     except SystemExit as e:
         raise HTTPException(status_code=400, detail=f"Figma extraction failed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Figma extraction failed: {str(e)}")
-    
+
+    # --- Step 3: Extract web data + screenshot ---
+    web_screenshot_bytes = None
     try:
         credentials_dict = None
         if request.credentials:
@@ -728,11 +774,14 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
                 "password": request.credentials.password,
                 "selectors": request.credentials.selectors,
             }
-        
+
         post_login_steps = None
         if request.post_login_steps:
             post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
-        
+
+        # Capture web screenshot when Gemini is enabled
+        capture_web_screenshot = request.use_gemini
+
         web_extracted = await extract_from_url(
             url=str(request.web_url),
             credentials=credentials_dict,
@@ -741,26 +790,95 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
             max_depth=request.max_depth,
             viewport=request.viewport,
             wait_for_selector=request.wait_for_selector,
-            screenshot=False,
+            screenshot=capture_web_screenshot,
             post_login_steps=post_login_steps,
         )
         web_extracted["source"] = "web"
         web_extracted["web_url"] = str(request.web_url)
+
+        # Store web screenshot if captured
+        if web_extracted.get("screenshot"):
+            web_screenshot_bytes = base64.b64decode(web_extracted["screenshot"])
+            web_ss_id = store_screenshot(web_screenshot_bytes)
+            web_extracted["screenshot_id"] = web_ss_id
+            web_extracted["screenshot_url"] = f"/api/extract/{web_ss_id}/image"
+            del web_extracted["screenshot"]
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Web extraction failed: {str(e)}")
-    
+
+    # --- Step 4: Run DOM-based comparison ---
     try:
         comparator = DesignComparator(figma_extracted, web_extracted)
-        
         if request.tolerance:
             comparator.tolerance.update(request.tolerance)
-        
         results = comparator.compare_all()
-        
-        return results
-        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+
+    # --- Step 5: Optional Gemini refinement ---
+    if request.use_gemini:
+        if not figma_screenshot_bytes:
+            results["gemini_refinement"] = {
+                "error": "Figma screenshot not available — cannot run visual refinement"
+            }
+            return results
+
+        if not web_screenshot_bytes:
+            results["gemini_refinement"] = {
+                "error": "Web screenshot not available — cannot run visual refinement"
+            }
+            return results
+
+        try:
+            gemini = GeminiRefinementLayer(model_name=request.gemini_model)
+            results = await gemini.refine_async(
+                comparison_results=results,
+                figma_screenshot=figma_screenshot_bytes,
+                web_screenshot=web_screenshot_bytes,
+            )
+        except ValueError as e:
+            results["gemini_refinement"] = {"error": str(e)}
+        except Exception as e:
+            logger.exception("Gemini refinement failed")
+            results["gemini_refinement"] = {
+                "error": f"Gemini refinement failed: {str(e)}",
+                "note": "DOM-based comparison results are still valid above.",
+            }
+
+    return results
+
+
+@app.post("/api/refine")
+async def refine_with_gemini(request: RefineRequest):
+    """
+    Standalone endpoint: refine existing comparison results using Gemini.
+
+    Use this when you already have comparison JSON + stored screenshots
+    and want to run (or re-run) the Gemini visual refinement separately.
+
+    Requires GEMINI_API_KEY in .env.
+    """
+    figma_bytes = get_screenshot(request.figma_screenshot_id)
+    if not figma_bytes:
+        raise HTTPException(status_code=404, detail="Figma screenshot not found in cache")
+
+    web_bytes = get_screenshot(request.web_screenshot_id)
+    if not web_bytes:
+        raise HTTPException(status_code=404, detail="Web screenshot not found in cache")
+
+    try:
+        gemini = GeminiRefinementLayer(model_name=request.gemini_model)
+        refined = await gemini.refine_async(
+            comparison_results=request.comparison_results,
+            figma_screenshot=figma_bytes,
+            web_screenshot=web_bytes,
+        )
+        return refined
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini refinement failed: {str(e)}")
 
 
 if __name__ == "__main__":
