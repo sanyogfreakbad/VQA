@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Optional
 from playwright.async_api import async_playwright
 
-from web_extractor import execute_login, execute_post_login_steps
+from web_extractor import execute_post_login_steps
 
 
 # Category-based colors matching frontend App.css
@@ -242,17 +242,65 @@ async def create_annotated_screenshot(
                 print(f"[VQA] Navigating to login page: {login_url}")
                 await page.goto(login_url, wait_until="networkidle")
                 
-                login_success = await execute_login(
-                    page,
-                    credentials.get("username", ""),
-                    credentials.get("password", ""),
-                    credentials.get("selectors"),
-                )
+                # Fill username
+                username_selectors = [
+                    'input[name="username"]',
+                    'input[type="text"]',
+                    'input[id="username"]',
+                    'input[placeholder*="user" i]',
+                ]
+                for selector in username_selectors:
+                    try:
+                        if await page.locator(selector).first.is_visible(timeout=2000):
+                            await page.fill(selector, credentials.get("username", ""))
+                            print(f"[VQA] Filled username using: {selector}")
+                            break
+                    except Exception:
+                        continue
                 
-                if login_success:
-                    print("[VQA] Logged in.")
-                else:
-                    print("[VQA] Warning: Login may have failed.")
+                # Fill password
+                password_selectors = [
+                    'input[name="password"]',
+                    'input[type="password"]',
+                    'input[id="password"]',
+                ]
+                for selector in password_selectors:
+                    try:
+                        if await page.locator(selector).first.is_visible(timeout=2000):
+                            await page.fill(selector, credentials.get("password", ""))
+                            print(f"[VQA] Filled password using: {selector}")
+                            break
+                    except Exception:
+                        continue
+                
+                # Click sign in button
+                submit_selector = credentials.get("selectors", {}).get("submit")
+                signin_selectors = [
+                    submit_selector,
+                    "[role='button']:has-text('Sign In')",
+                    "button:has-text('Sign In')",
+                    "button:has-text('Login')",
+                    "button[type='submit']",
+                ] if submit_selector else [
+                    "[role='button']:has-text('Sign In')",
+                    "button:has-text('Sign In')",
+                    "button:has-text('Login')",
+                    "button[type='submit']",
+                ]
+                
+                for selector in signin_selectors:
+                    if not selector:
+                        continue
+                    try:
+                        if await page.locator(selector).first.is_visible(timeout=2000):
+                            await page.click(selector)
+                            print(f"[VQA] Clicked sign in using: {selector}")
+                            break
+                    except Exception:
+                        continue
+                
+                await page.wait_for_load_state("networkidle")
+                print("[VQA] Logged in.")
 
                 # Step 2: Execute post-login steps (using same logic as web_extractor)
                 post_login_steps = config.get("post_login_steps", [])
@@ -372,97 +420,20 @@ async def run_standalone(comparison_results: dict):
         print(f"[VQA] Screenshot saved → {output_path}")
 
 
-async def run_preprocessing_test():
-    """
-    Run just the preprocessing steps (login + post-login) without annotations.
-    Useful for testing the login flow with visible browser.
-    """
-    print("[VQA] Running preprocessing test (login + post-login steps)...")
-    
-    async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=False)
-        context = await browser.new_context(
-            viewport=DEFAULT_CONFIG.get("viewport", {"width": 1440, "height": 800}),
-            ignore_https_errors=True,
-        )
-        page = await context.new_page()
-
-        try:
-            # Step 1: Login
-            credentials = DEFAULT_CONFIG.get("credentials")
-            login_url = DEFAULT_CONFIG.get("login_url")
-            
-            if credentials and login_url:
-                print(f"[VQA] Navigating to login page: {login_url}")
-                await page.goto(login_url, wait_until="networkidle")
-                
-                login_success = await execute_login(
-                    page,
-                    credentials.get("username", ""),
-                    credentials.get("password", ""),
-                    credentials.get("selectors"),
-                )
-                
-                if login_success:
-                    print("[VQA] Logged in.")
-                else:
-                    print("[VQA] Warning: Login may have failed.")
-
-                # Step 2: Execute post-login steps
-                post_login_steps = DEFAULT_CONFIG.get("post_login_steps", [])
-                if post_login_steps:
-                    print("[VQA] Executing post-login steps...")
-                    await execute_post_login_steps(page, post_login_steps)
-
-            # Step 3: Navigate to target page
-            target_url = DEFAULT_CONFIG.get("url")
-            if target_url:
-                print(f"[VQA] Navigating to {target_url}...")
-                await page.goto(target_url, wait_until="networkidle")
-                await page.wait_for_timeout(2000)
-
-            # Take screenshot
-            screenshot_bytes = await page.screenshot(full_page=True)
-            output_path = DEFAULT_CONFIG.get("output_screenshot", "annotated_screenshot.png")
-            Path(output_path).write_bytes(screenshot_bytes)
-            print(f"[VQA] Screenshot saved → {output_path}")
-            
-            # Keep browser open for inspection
-            print("[VQA] Preprocessing complete. Press Enter to close browser...")
-            input()
-
-        except Exception as e:
-            print(f"[VQA] Error: {e}")
-            raise
-        finally:
-            await browser.close()
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Visual QA Annotator")
     parser.add_argument(
         "--results", 
         type=str, 
-        required=False,
+        required=True,
         help="Path to the comparison results JSON file.",
-    )
-    parser.add_argument(
-        "--test",
-        action="store_true",
-        help="Run preprocessing test only (login + post-login steps, no annotations).",
     )
     args = parser.parse_args()
 
-    if args.test:
-        asyncio.run(run_preprocessing_test())
-    elif args.results:
-        results_path = Path(args.results)
-        if not results_path.exists():
-            print(f"[VQA] Error: Results file not found: {results_path}")
-            exit(1)
-        comparison_results = json.loads(results_path.read_text(encoding="utf-8"))
-        asyncio.run(run_standalone(comparison_results))
-    else:
-        print("[VQA] Error: Either --results or --test is required.")
-        parser.print_help()
+    results_path = Path(args.results)
+    if not results_path.exists():
+        print(f"[VQA] Error: Results file not found: {results_path}")
         exit(1)
+
+    comparison_results = json.loads(results_path.read_text(encoding="utf-8"))
+    asyncio.run(run_standalone(comparison_results))
