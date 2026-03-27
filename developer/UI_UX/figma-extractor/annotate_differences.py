@@ -230,6 +230,110 @@ def build_annotations(
     return annotations, max_serial
 
 
+def build_figma_annotations(
+    comparison_results: dict,
+    filter_serial_numbers: list[int] | None = None
+) -> tuple[list[dict], int]:
+    """
+    Build annotations for Figma screenshot (specifically for missing_elements).
+    
+    Missing elements exist in Figma but not in Web, so they use figma_position
+    for overlay on the Figma screenshot.
+    
+    Args:
+        comparison_results: The comparison results dict
+        filter_serial_numbers: Optional list of serial numbers to include (e.g., [32, 35, 37]).
+                              If None, includes all missing elements.
+    
+    Returns:
+        tuple: (annotations list for Figma overlay, total missing element count)
+    """
+    annotations = []
+    seen_boxes: dict[str, int] = {}
+    max_serial = 0
+    skipped_no_position = []
+    skipped_by_filter = 0
+
+    # Handle both input formats
+    if "by_category" in comparison_results:
+        categories = comparison_results["by_category"]
+    else:
+        categories = {k: v for k, v in comparison_results.items() 
+                      if isinstance(v, list)}
+
+    # Only process missing_elements category
+    missing_items = categories.get("missing_elements", [])
+    
+    if not missing_items:
+        print("[VQA-Figma] No missing elements found")
+        return [], 0
+
+    print(f"[VQA-Figma] Processing {len(missing_items)} missing elements for Figma overlay")
+    if filter_serial_numbers:
+        print(f"[VQA-Figma] Filter by serial numbers: {filter_serial_numbers}")
+
+    for item in missing_items:
+        serial_number = item.get("serial_number")
+        if serial_number is None:
+            continue
+            
+        max_serial = max(max_serial, serial_number)
+        
+        # Apply serial number filter
+        if filter_serial_numbers and serial_number not in filter_serial_numbers:
+            skipped_by_filter += 1
+            continue
+        
+        # Use figma_position for missing elements
+        pos = item.get("figma_position")
+        if not pos:
+            skipped_no_position.append({
+                "serial": serial_number,
+                "text": item.get("text", item.get("element", "unknown")),
+            })
+            continue
+
+        sub_type = item.get("sub_type", "missing")
+        element_text = item.get("text", item.get("element", ""))
+        figma_value = item.get("figma_value", "")
+
+        # Dedup key based on position
+        box_key = f"missing|{pos['x']}|{pos['y']}|{pos['width']}|{pos['height']}"
+
+        # Build descriptive issue label with serial number
+        issue_label = f"#{serial_number} {sub_type}: {element_text}"
+
+        if box_key in seen_boxes:
+            idx = seen_boxes[box_key]
+            annotations[idx]["issues"].append(issue_label)
+            annotations[idx]["serial_numbers"].append(serial_number)
+            print(f"[VQA-Figma]   #{serial_number} merged with existing box")
+        else:
+            seen_boxes[box_key] = len(annotations)
+            annotations.append({
+                "x": pos["x"],
+                "y": pos["y"],
+                "width": pos["width"],
+                "height": pos["height"],
+                "category": "missing_elements",
+                "element": element_text,
+                "issues": [issue_label],
+                "serial_numbers": [serial_number],
+            })
+            print(f"[VQA-Figma]   #{serial_number} new MISSING box at ({pos['x']:.0f}, {pos['y']:.0f})")
+
+    # Report skipped items
+    if skipped_no_position:
+        print(f"\n[VQA-Figma] WARNING: {len(skipped_no_position)} items skipped (no figma_position):")
+        for skip in skipped_no_position:
+            print(f"[VQA-Figma]   #{skip['serial']}: {skip['text']}")
+    
+    if skipped_by_filter:
+        print(f"[VQA-Figma] {skipped_by_filter} items filtered out by serial_number filter")
+
+    return annotations, max_serial
+
+
 def get_overlay_js() -> str:
     """Generate the JavaScript for overlay injection with category colors.
     

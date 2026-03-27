@@ -135,6 +135,21 @@ class DiffItem:
     web_position: Optional[Dict[str, float]] = None
     web_node_id: Optional[str] = None
     web_locator: Optional[str] = None
+    figma_position: Optional[Dict[str, float]] = None
+
+
+def _figma_pos(elem: Optional['NormalizedElement']) -> Optional[Dict[str, float]]:
+    """Extract position dict from a NormalizedElement (for Figma elements)."""
+    if elem is None:
+        return None
+    if elem.x is None and elem.y is None:
+        return None
+    return {
+        "x": round(elem.x, 2) if elem.x is not None else 0,
+        "y": round(elem.y, 2) if elem.y is not None else 0,
+        "width": round(elem.width, 2) if elem.width is not None else 0,
+        "height": round(elem.height, 2) if elem.height is not None else 0,
+    }
 
 
 def _web_pos(elem: Optional['NormalizedElement']) -> Optional[Dict[str, float]]:
@@ -672,7 +687,8 @@ class DesignComparator:
                         figma_value=f_elem.text,
                         web_value=None,
                         delta="Missing in Web",
-                        severity="error"
+                        severity="error",
+                        figma_position=_figma_pos(f_elem)
                     ))
     
     def _compare_text_properties(self, figma: NormalizedElement, web: NormalizedElement, include_match_info: bool = False):
@@ -815,7 +831,8 @@ class DesignComparator:
                     figma_value=f_card.text,
                     web_value=None,
                     delta="Missing in Web",
-                    severity="error"
+                    severity="error",
+                    figma_position=_figma_pos(f_card)
                 ))
     
     def _compare_card_properties(self, figma: NormalizedElement, web: NormalizedElement):
@@ -1138,6 +1155,9 @@ class DesignComparator:
                 }
                 if diff.web_position:
                     item["web_position"] = diff.web_position
+                # Include Figma position for missing elements (for Figma screenshot annotation)
+                if diff.figma_position:
+                    item["figma_position"] = diff.figma_position
                 # Include DOM node id and CSS locator for non-missing elements
                 if cat != "missing_elements":
                     if diff.web_node_id:

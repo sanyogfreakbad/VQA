@@ -27,7 +27,7 @@ from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_i
 from web_extractor import extract_from_url
 from design_comparator import DesignComparator
 from gemini_refinement import GeminiRefinementLayer
-from annotate_differences import create_annotated_screenshot, build_annotations, CATEGORY_COLORS
+from annotate_differences import create_annotated_screenshot, build_annotations, build_figma_annotations, CATEGORY_COLORS
 
 load_dotenv()
 
@@ -1181,6 +1181,64 @@ async def get_annotation_metadata(request: AnnotationMetadataRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to build annotation metadata: {str(e)}"
+        )
+
+
+class FigmaAnnotationMetadataRequest(BaseModel):
+    """Request body for getting Figma annotation metadata (missing elements only)."""
+    comparison_results: dict = Field(
+        ...,
+        description="The comparison results JSON from /api/compare/urls",
+    )
+    serial_numbers: Optional[list[int]] = Field(
+        None,
+        description="Filter missing element annotations by specific serial numbers (e.g., [32, 35, 37]). If None, returns all.",
+    )
+
+
+@app.post("/api/annotate/figma-metadata")
+async def get_figma_annotation_metadata(request: FigmaAnnotationMetadataRequest):
+    """
+    Get Figma annotation metadata for missing elements (client-side rendering).
+    
+    Missing elements exist in Figma but not in Web. This endpoint returns the
+    bounding box coordinates on the Figma screenshot for these elements.
+    
+    **Use this for:**
+    - Split view comparison showing Figma with missing element boxes
+    - Client-side filtering by serial number
+    - Dynamic toggling of missing element visibility
+    
+    **Response includes:**
+    - annotations: Array of missing element annotations with figma positions
+    - category_colors: Color mapping (missing_elements uses red #ef4444)
+    - total_count: Total number of missing elements
+    - filtered_count: Number after applying serial_number filter
+    """
+    try:
+        annotations, total_count = build_figma_annotations(
+            request.comparison_results,
+            filter_serial_numbers=request.serial_numbers
+        )
+        
+        response = {
+            "success": True,
+            "annotations": annotations,
+            "total_count": total_count,
+            "filtered_count": len(annotations),
+            "category_colors": CATEGORY_COLORS,
+        }
+        
+        if request.serial_numbers:
+            response["filters_applied"] = {"serial_numbers": request.serial_numbers}
+            
+        return response
+        
+    except Exception as e:
+        logger.exception("Failed to build Figma annotation metadata")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to build Figma annotation metadata: {str(e)}"
         )
 
 

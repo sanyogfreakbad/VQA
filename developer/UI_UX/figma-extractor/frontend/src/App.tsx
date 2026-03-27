@@ -41,6 +41,7 @@ interface ComparisonResult {
     categories?: CategorySummary
   }
   web_screenshot_url?: string
+  figma_screenshot_url?: string
 }
 
 interface FormData {
@@ -77,6 +78,15 @@ interface AnnotatedImageState {
   baseImageUrl: string | null
   annotations: Annotation[]
   categoryColors: CategoryColors
+  loading: boolean
+  error: string | null
+  imageWidth: number
+  imageHeight: number
+}
+
+interface FigmaImageState {
+  imageUrl: string | null
+  annotations: Annotation[]
   loading: boolean
   error: string | null
   imageWidth: number
@@ -121,7 +131,17 @@ function App() {
     imageWidth: 0,
     imageHeight: 0
   })
+  const [figmaImage, setFigmaImage] = useState<FigmaImageState>({
+    imageUrl: null,
+    annotations: [],
+    loading: false,
+    error: null,
+    imageWidth: 0,
+    imageHeight: 0
+  })
+  const [splitView, setSplitView] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
+  const figmaImageRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,10 +164,19 @@ function App() {
     setSelectedCategory(null)
     setSelectedSerialNumbers(new Set())
     setHoveredSerial(null)
+    setSplitView(false)
     setAnnotatedImage({
       baseImageUrl: null,
       annotations: [],
       categoryColors: {},
+      loading: false,
+      error: null,
+      imageWidth: 0,
+      imageHeight: 0
+    })
+    setFigmaImage({
+      imageUrl: null,
+      annotations: [],
       loading: false,
       error: null,
       imageWidth: 0,
@@ -270,6 +299,25 @@ function App() {
         imageWidth: 0,
         imageHeight: 0
       })
+
+      // Also fetch Figma annotation metadata for missing elements
+      const figmaMetadataResponse = await fetch('/api/annotate/figma-metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comparison_results: result })
+      })
+
+      if (figmaMetadataResponse.ok) {
+        const figmaMetadata = await figmaMetadataResponse.json()
+        setFigmaImage({
+          imageUrl: result.figma_screenshot_url || null,
+          annotations: figmaMetadata.annotations || [],
+          loading: false,
+          error: null,
+          imageWidth: 0,
+          imageHeight: 0
+        })
+      }
     } catch (err) {
       setAnnotatedImage(prev => ({
         ...prev,
@@ -286,6 +334,17 @@ function App() {
         ...prev,
         imageWidth: imageRef.current?.naturalWidth || 0,
         imageHeight: imageRef.current?.naturalHeight || 0
+      }))
+    }
+  }, [])
+
+  // Handle Figma image load to get dimensions
+  const handleFigmaImageLoad = useCallback(() => {
+    if (figmaImageRef.current) {
+      setFigmaImage(prev => ({
+        ...prev,
+        imageWidth: figmaImageRef.current?.naturalWidth || 0,
+        imageHeight: figmaImageRef.current?.naturalHeight || 0
       }))
     }
   }, [])
@@ -333,6 +392,28 @@ function App() {
 
     return filtered
   }, [annotatedImage.annotations, selectedCategory, selectedSerialNumbers])
+
+  // Get filtered Figma annotations (missing elements only)
+  const getFilteredFigmaAnnotations = useCallback((): Annotation[] => {
+    let filtered = figmaImage.annotations
+
+    // Show missing elements only when:
+    // 1. No category filter (show all)
+    // 2. 'total' is selected
+    // 3. 'missing_elements' is selected
+    if (selectedCategory && selectedCategory !== 'total' && selectedCategory !== 'missing_elements') {
+      return [] // Hide Figma annotations when other categories are selected
+    }
+
+    // Filter by selected serial numbers (if any selected)
+    if (selectedSerialNumbers.size > 0) {
+      filtered = filtered.filter(ann => 
+        ann.serial_numbers.some(sn => selectedSerialNumbers.has(sn))
+      )
+    }
+
+    return filtered
+  }, [figmaImage.annotations, selectedCategory, selectedSerialNumbers])
 
   // Get color for annotation category
   const getAnnotationColor = (category: string): string => {
@@ -564,25 +645,36 @@ function App() {
             <div className="annotated-image-card">
               <div className="annotated-image-header">
                 <h2>Annotated Screenshot</h2>
-                {annotatedImage.annotations.length > 0 && (
-                  <div className="annotation-controls">
-                    <span className="annotation-count">
-                      Showing {getFilteredAnnotations().length} of {annotatedImage.annotations.length} boxes
-                    </span>
-                    {selectedSerialNumbers.size > 0 && (
-                      <button 
-                        className="clear-selection-btn"
-                        onClick={clearSerialSelection}
-                      >
-                        Clear Selection ({selectedSerialNumbers.size})
-                      </button>
-                    )}
-                  </div>
-                )}
+                <div className="header-controls">
+                  {figmaImage.imageUrl && (
+                    <button 
+                      className={`split-view-btn ${splitView ? 'active' : ''}`}
+                      onClick={() => setSplitView(!splitView)}
+                    >
+                      {splitView ? 'Single View' : 'Split View'}
+                    </button>
+                  )}
+                  {annotatedImage.annotations.length > 0 && (
+                    <div className="annotation-controls">
+                      <span className="annotation-count">
+                        Showing {getFilteredAnnotations().length} of {annotatedImage.annotations.length} boxes
+                      </span>
+                      {selectedSerialNumbers.size > 0 && (
+                        <button 
+                          className="clear-selection-btn"
+                          onClick={clearSerialSelection}
+                        >
+                          Clear Selection ({selectedSerialNumbers.size})
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               {annotatedImage.annotations.length > 0 && !annotatedImage.loading && (
                 <p className="annotation-tip">
                   Click category badges to filter by type. Click rows or boxes to select specific items.
+                  {figmaImage.imageUrl && ' Enable Split View to see Figma design with missing elements.'}
                 </p>
               )}
               {annotatedImage.loading && (
@@ -597,86 +689,187 @@ function App() {
                 </div>
               )}
               {annotatedImage.baseImageUrl && (
-                <div className="annotated-image-container" ref={containerRef}>
-                  <div className="image-wrapper">
-                    <img 
-                      ref={imageRef}
-                      src={annotatedImage.baseImageUrl} 
-                      alt="Web page screenshot" 
-                      className="annotated-image"
-                      onLoad={handleImageLoad}
-                    />
-                    {/* SVG Overlay for dynamic annotations */}
-                    {annotatedImage.imageWidth > 0 && (
-                      <svg 
-                        className="annotation-overlay"
-                        viewBox={`0 0 ${annotatedImage.imageWidth} ${annotatedImage.imageHeight}`}
-                        preserveAspectRatio="xMinYMin meet"
-                      >
-                        {getFilteredAnnotations().map((ann, idx) => {
-                          const color = getAnnotationColor(ann.category)
-                          const isHighlighted = isAnnotationHighlighted(ann)
-                          const badgeText = ann.serial_numbers.join(',')
-                          
-                          return (
-                            <g 
-                              key={idx} 
-                              className={`annotation-group ${isHighlighted ? 'highlighted' : ''}`}
-                              onMouseEnter={() => setHoveredSerial(ann.serial_numbers[0])}
-                              onMouseLeave={() => setHoveredSerial(null)}
-                              onClick={() => ann.serial_numbers.forEach(sn => toggleSerialNumber(sn))}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              {/* Bounding box */}
-                              <rect
-                                x={ann.x}
-                                y={ann.y}
-                                width={ann.width}
-                                height={ann.height}
-                                fill="transparent"
-                                stroke={color}
-                                strokeWidth={isHighlighted ? 4 : 2}
-                                rx={3}
-                                className="annotation-box"
-                              />
-                              {/* Number badge */}
-                              <g transform={`translate(${ann.x - 2}, ${ann.y - 22})`}>
-                                <rect
-                                  x={0}
-                                  y={0}
-                                  width={Math.max(24, badgeText.length * 8 + 12)}
-                                  height={20}
-                                  fill={color}
-                                  rx={10}
-                                  className="annotation-badge-bg"
-                                />
-                                <text
-                                  x={Math.max(12, (badgeText.length * 8 + 12) / 2)}
-                                  y={14}
-                                  fill="white"
-                                  fontSize={11}
-                                  fontWeight={700}
-                                  textAnchor="middle"
-                                  className="annotation-badge-text"
+                <div className={`images-container ${splitView ? 'split-view' : ''}`} ref={containerRef}>
+                  {/* Figma Screenshot (shown in split view) */}
+                  {splitView && figmaImage.imageUrl && (
+                    <div className="image-panel figma-panel">
+                      <div className="panel-header">
+                        <span className="panel-label">Figma Design</span>
+                        <span className="panel-count">
+                          {getFilteredFigmaAnnotations().length} missing elements
+                        </span>
+                      </div>
+                      <div className="image-wrapper">
+                        <img 
+                          ref={figmaImageRef}
+                          src={figmaImage.imageUrl} 
+                          alt="Figma design screenshot" 
+                          className="annotated-image"
+                          onLoad={handleFigmaImageLoad}
+                        />
+                        {/* SVG Overlay for Figma missing elements */}
+                        {figmaImage.imageWidth > 0 && (
+                          <svg 
+                            className="annotation-overlay"
+                            viewBox={`0 0 ${figmaImage.imageWidth} ${figmaImage.imageHeight}`}
+                            preserveAspectRatio="xMinYMin meet"
+                          >
+                            {getFilteredFigmaAnnotations().map((ann, idx) => {
+                              const color = annotatedImage.categoryColors['missing_elements']?.border || '#ef4444'
+                              const isHighlighted = isAnnotationHighlighted(ann)
+                              const badgeText = ann.serial_numbers.join(',')
+                              
+                              return (
+                                <g 
+                                  key={idx} 
+                                  className={`annotation-group ${isHighlighted ? 'highlighted' : ''}`}
+                                  onMouseEnter={() => setHoveredSerial(ann.serial_numbers[0])}
+                                  onMouseLeave={() => setHoveredSerial(null)}
+                                  onClick={() => ann.serial_numbers.forEach(sn => toggleSerialNumber(sn))}
+                                  style={{ cursor: 'pointer' }}
                                 >
-                                  {badgeText}
-                                </text>
-                              </g>
-                            </g>
-                          )
-                        })}
-                      </svg>
+                                  <rect
+                                    x={ann.x}
+                                    y={ann.y}
+                                    width={ann.width}
+                                    height={ann.height}
+                                    fill="rgba(239, 68, 68, 0.1)"
+                                    stroke={color}
+                                    strokeWidth={isHighlighted ? 4 : 2}
+                                    strokeDasharray={isHighlighted ? "0" : "5,5"}
+                                    rx={3}
+                                    className="annotation-box"
+                                  />
+                                  <g transform={`translate(${ann.x - 2}, ${ann.y - 22})`}>
+                                    <rect
+                                      x={0}
+                                      y={0}
+                                      width={Math.max(24, badgeText.length * 8 + 12)}
+                                      height={20}
+                                      fill={color}
+                                      rx={10}
+                                      className="annotation-badge-bg"
+                                    />
+                                    <text
+                                      x={Math.max(12, (badgeText.length * 8 + 12) / 2)}
+                                      y={14}
+                                      fill="white"
+                                      fontSize={11}
+                                      fontWeight={700}
+                                      textAnchor="middle"
+                                      className="annotation-badge-text"
+                                    >
+                                      {badgeText}
+                                    </text>
+                                  </g>
+                                </g>
+                              )
+                            })}
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Web Screenshot */}
+                  <div className={`image-panel web-panel ${splitView ? '' : 'full-width'}`}>
+                    {splitView && (
+                      <div className="panel-header">
+                        <span className="panel-label">Web Implementation</span>
+                        <span className="panel-count">
+                          {getFilteredAnnotations().length} differences
+                        </span>
+                      </div>
                     )}
+                    <div className="image-wrapper">
+                      <img 
+                        ref={imageRef}
+                        src={annotatedImage.baseImageUrl} 
+                        alt="Web page screenshot" 
+                        className="annotated-image"
+                        onLoad={handleImageLoad}
+                      />
+                      {/* SVG Overlay for dynamic annotations */}
+                      {annotatedImage.imageWidth > 0 && (
+                        <svg 
+                          className="annotation-overlay"
+                          viewBox={`0 0 ${annotatedImage.imageWidth} ${annotatedImage.imageHeight}`}
+                          preserveAspectRatio="xMinYMin meet"
+                        >
+                          {getFilteredAnnotations().map((ann, idx) => {
+                            const color = getAnnotationColor(ann.category)
+                            const isHighlighted = isAnnotationHighlighted(ann)
+                            const badgeText = ann.serial_numbers.join(',')
+                            
+                            return (
+                              <g 
+                                key={idx} 
+                                className={`annotation-group ${isHighlighted ? 'highlighted' : ''}`}
+                                onMouseEnter={() => setHoveredSerial(ann.serial_numbers[0])}
+                                onMouseLeave={() => setHoveredSerial(null)}
+                                onClick={() => ann.serial_numbers.forEach(sn => toggleSerialNumber(sn))}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <rect
+                                  x={ann.x}
+                                  y={ann.y}
+                                  width={ann.width}
+                                  height={ann.height}
+                                  fill="transparent"
+                                  stroke={color}
+                                  strokeWidth={isHighlighted ? 4 : 2}
+                                  rx={3}
+                                  className="annotation-box"
+                                />
+                                <g transform={`translate(${ann.x - 2}, ${ann.y - 22})`}>
+                                  <rect
+                                    x={0}
+                                    y={0}
+                                    width={Math.max(24, badgeText.length * 8 + 12)}
+                                    height={20}
+                                    fill={color}
+                                    rx={10}
+                                    className="annotation-badge-bg"
+                                  />
+                                  <text
+                                    x={Math.max(12, (badgeText.length * 8 + 12) / 2)}
+                                    y={14}
+                                    fill="white"
+                                    fontSize={11}
+                                    fontWeight={700}
+                                    textAnchor="middle"
+                                    className="annotation-badge-text"
+                                  >
+                                    {badgeText}
+                                  </text>
+                                </g>
+                              </g>
+                            )
+                          })}
+                        </svg>
+                      )}
+                    </div>
                   </div>
-                  <div className="image-actions">
+                </div>
+              )}
+              {annotatedImage.baseImageUrl && (
+                <div className="image-actions">
+                  <a 
+                    href={annotatedImage.baseImageUrl} 
+                    download="web_screenshot.png"
+                    className="download-btn"
+                  >
+                    Download Web Image
+                  </a>
+                  {figmaImage.imageUrl && (
                     <a 
-                      href={annotatedImage.baseImageUrl} 
-                      download="screenshot.png"
-                      className="download-btn"
+                      href={figmaImage.imageUrl} 
+                      download="figma_screenshot.png"
+                      className="download-btn download-figma"
                     >
-                      Download Image
+                      Download Figma Image
                     </a>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
