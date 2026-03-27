@@ -63,7 +63,11 @@ DEFAULT_CONFIG = {
 }
 
 
-def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
+def build_annotations(
+    comparison_results: dict,
+    filter_categories: list[str] | None = None,
+    filter_serial_numbers: list[int] | None = None
+) -> tuple[list[dict], int]:
     """
     Flatten the comparison results into a list of annotations.
     Each annotation = one bounding box on the page per category.
@@ -81,6 +85,13 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     
     Processes ALL categories except missing_elements (text, spacing, size, color, etc.)
     
+    Args:
+        comparison_results: The comparison results dict
+        filter_categories: Optional list of categories to include (e.g., ['text', 'size']).
+                          If None, includes all categories.
+        filter_serial_numbers: Optional list of serial numbers to include (e.g., [1, 3, 5]).
+                              If None, includes all.
+    
     Returns:
         tuple: (annotations list, total difference count)
     """
@@ -89,6 +100,11 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     serial_counter = 0  # Fallback counter if serial_number not in data
     max_serial = 0  # Track highest serial number seen
     skipped_no_position = []  # Track items skipped due to no position
+    skipped_by_filter = 0  # Count items filtered out
+
+    # Normalize filter_categories to lowercase
+    if filter_categories:
+        filter_categories = [c.lower().replace(" ", "_") for c in filter_categories]
 
     # Handle both input formats
     if "by_category" in comparison_results:
@@ -102,6 +118,12 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     for cat, items in categories.items():
         if isinstance(items, list):
             print(f"[VQA]   - {cat}: {len(items)} items")
+    
+    # Log filter settings
+    if filter_categories:
+        print(f"[VQA] Filter by categories: {filter_categories}")
+    if filter_serial_numbers:
+        print(f"[VQA] Filter by serial numbers: {filter_serial_numbers}")
 
     # Process categories in consistent order (same as API)
     ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
@@ -125,6 +147,12 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
 
         # Normalize category for color lookup
         normalized_category = category.lower().replace(" ", "_")
+        
+        # Apply category filter
+        if filter_categories and normalized_category not in filter_categories:
+            skipped_by_filter += len(items)
+            print(f"[VQA]   Skipping category '{category}' (not in filter)")
+            continue
 
         for item in items:
             # Use serial_number from API if available, otherwise increment counter
@@ -134,6 +162,11 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
                 serial_number = serial_counter
             
             max_serial = max(max_serial, serial_number)
+            
+            # Apply serial number filter
+            if filter_serial_numbers and serial_number not in filter_serial_numbers:
+                skipped_by_filter += 1
+                continue
             
             pos = item.get("web_position")
             if not pos:
@@ -190,6 +223,9 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
         print(f"\n[VQA] WARNING: {len(skipped_no_position)} items skipped (no web_position):")
         for skip in skipped_no_position:
             print(f"[VQA]   #{skip['serial']} ({skip['category']}/{skip['sub_type']}): {skip['text']}")
+    
+    if skipped_by_filter:
+        print(f"[VQA] {skipped_by_filter} items filtered out by category/serial_number filters")
 
     return annotations, max_serial
 
@@ -266,8 +302,10 @@ def get_overlay_js() -> str:
 async def create_annotated_screenshot(
     config: dict,
     comparison_results: dict,
-    headless: bool = True
-) -> Optional[bytes]:
+    headless: bool = True,
+    filter_categories: list[str] | None = None,
+    filter_serial_numbers: list[int] | None = None
+) -> tuple[Optional[bytes], list[dict]]:
     """
     Create an annotated screenshot from comparison results.
     
@@ -277,16 +315,22 @@ async def create_annotated_screenshot(
         config: Configuration dict with url, login_url, credentials, post_login_steps, viewport
         comparison_results: The comparison results from /api/compare/urls
         headless: Whether to run browser in headless mode
+        filter_categories: Optional list of categories to include (e.g., ['text', 'size'])
+        filter_serial_numbers: Optional list of serial numbers to include (e.g., [1, 3, 5])
     
     Returns:
-        Screenshot bytes (PNG) or None if failed
+        Tuple of (Screenshot bytes (PNG) or None if failed, list of annotation metadata)
     """
-    annotations, total_differences = build_annotations(comparison_results)
+    annotations, total_differences = build_annotations(
+        comparison_results,
+        filter_categories=filter_categories,
+        filter_serial_numbers=filter_serial_numbers
+    )
     print(f"[VQA] {total_differences} total differences, {len(annotations)} unique bounding boxes to draw.")
 
     if len(annotations) == 0:
-        print("[VQA] No annotations found in the comparison results.")
-        return None
+        print("[VQA] No annotations found in the comparison results (may be filtered out).")
+        return None, []
 
     screenshot_bytes = None
 
@@ -365,7 +409,7 @@ async def create_annotated_screenshot(
         finally:
             await browser.close()
 
-    return screenshot_bytes
+    return screenshot_bytes, annotations
 
 
 async def _resolve_positions_fallback_to_locators(page, annotations: list[dict]) -> list[dict]:
@@ -436,7 +480,7 @@ def _print_legend(annotations: list[dict], comparison_results: dict, total_diffe
 # Standalone script entry point
 async def run_standalone(comparison_results: dict):
     """Run annotation with default config (for standalone usage)."""
-    screenshot_bytes = await create_annotated_screenshot(
+    screenshot_bytes, annotations = await create_annotated_screenshot(
         config=DEFAULT_CONFIG,
         comparison_results=comparison_results,
         headless=False
@@ -446,6 +490,7 @@ async def run_standalone(comparison_results: dict):
         output_path = DEFAULT_CONFIG.get("output_screenshot", "annotated_screenshot.png")
         Path(output_path).write_bytes(screenshot_bytes)
         print(f"[VQA] Screenshot saved → {output_path}")
+        print(f"[VQA] {len(annotations)} annotations created")
 
 
 if __name__ == "__main__":

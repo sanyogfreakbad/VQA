@@ -27,7 +27,7 @@ from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_i
 from web_extractor import extract_from_url
 from design_comparator import DesignComparator
 from gemini_refinement import GeminiRefinementLayer
-from annotate_differences import create_annotated_screenshot
+from annotate_differences import create_annotated_screenshot, build_annotations, CATEGORY_COLORS
 
 load_dotenv()
 
@@ -474,6 +474,19 @@ class AnnotateRequest(BaseModel):
         {"width": 1440, "height": 800},
         description="Viewport dimensions for the screenshot",
     )
+    # Filter parameters for dynamic annotation
+    categories: Optional[list[str]] = Field(
+        None,
+        description="Filter annotations by category (e.g., ['text', 'size', 'spacing']). If None, shows all categories.",
+    )
+    serial_numbers: Optional[list[int]] = Field(
+        None,
+        description="Filter annotations by specific serial numbers (e.g., [1, 3, 5, 7]). If None, shows all.",
+    )
+    include_metadata: bool = Field(
+        True,
+        description="Include annotation metadata in response for client-side filtering",
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -497,7 +510,10 @@ class AnnotateRequest(BaseModel):
                         {"action": "click", "text": "CIC - CB Warehouse 1"},
                         {"action": "click", "test_id": "next"}
                     ],
-                    "viewport": {"width": 1440, "height": 800}
+                    "viewport": {"width": 1440, "height": 800},
+                    "categories": ["text", "size"],
+                    "serial_numbers": [1, 3, 5, 7],
+                    "include_metadata": True
                 }
             ]
         }
@@ -530,13 +546,15 @@ def root():
     return {
         "status": "ok",
         "message": "Design Extractor API is running",
-        "version": "3.0.0",
+        "version": "3.1.0",
         "endpoints": {
             "figma_url": "POST /api/figma/extract (accepts full Figma URL)",
             "figma": "GET /extract/{file_key}",
             "web": "POST /api/extract",
             "compare": "POST /api/compare/urls (compare Figma vs Web, use_gemini=true for AI refinement)",
             "refine": "POST /api/refine (standalone Gemini refinement with cached screenshots)",
+            "annotate": "POST /api/annotate (create annotated screenshot with filters: categories, serial_numbers)",
+            "annotate_metadata": "POST /api/annotate/metadata (get annotation metadata for client-side rendering)",
             "screenshot": "GET /api/extract/{screenshot_id}/image",
             "docs": "/docs",
         },
@@ -1007,6 +1025,11 @@ async def create_annotated_image(request: AnnotateRequest):
     of the web page with visual annotations (colored bounding boxes) around
     elements that have differences.
 
+    **Dynamic Filtering:**
+    - **categories**: Filter by category (e.g., ["text", "size", "spacing"])
+    - **serial_numbers**: Filter by specific difference numbers (e.g., [1, 3, 5, 7])
+    - **include_metadata**: Return annotation metadata for client-side filtering
+
     Colors are based on difference categories:
     - Text: Purple (#8b5cf6)
     - Spacing: Pink (#ec4899)
@@ -1017,7 +1040,8 @@ async def create_annotated_image(request: AnnotateRequest):
     - Buttons: Sky Blue (#0ea5e9)
     - Other: Amber (#f59e0b)
 
-    Returns the annotated screenshot as a PNG image URL.
+    Returns the annotated screenshot URL and optionally annotation metadata for
+    client-side rendering/filtering.
     """
     try:
         # Build config from request
@@ -1042,28 +1066,45 @@ async def create_annotated_image(request: AnnotateRequest):
                 step.model_dump(exclude_none=True) for step in request.post_login_steps
             ]
 
-        # Create annotated screenshot
-        screenshot_bytes = await create_annotated_screenshot(
+        # Create annotated screenshot with optional filters
+        screenshot_bytes, annotations = await create_annotated_screenshot(
             config=config,
             comparison_results=request.comparison_results,
-            headless=False
+            headless=False,
+            filter_categories=request.categories,
+            filter_serial_numbers=request.serial_numbers
         )
 
         if screenshot_bytes is None:
             raise HTTPException(
                 status_code=400,
-                detail="No annotations found in comparison results or screenshot capture failed"
+                detail="No annotations found in comparison results or all filtered out"
             )
 
         # Store the screenshot and return URL
         screenshot_id = store_screenshot(screenshot_bytes)
 
-        return {
+        response = {
             "success": True,
             "annotated_screenshot_id": screenshot_id,
             "annotated_screenshot_url": f"/api/extract/{screenshot_id}/image",
+            "annotation_count": len(annotations),
             "message": "Annotated screenshot created successfully"
         }
+        
+        # Include filters applied in response
+        if request.categories:
+            response["filters_applied"] = response.get("filters_applied", {})
+            response["filters_applied"]["categories"] = request.categories
+        if request.serial_numbers:
+            response["filters_applied"] = response.get("filters_applied", {})
+            response["filters_applied"]["serial_numbers"] = request.serial_numbers
+        
+        # Include annotation metadata for client-side filtering
+        if request.include_metadata:
+            response["annotations"] = annotations
+
+        return response
 
     except HTTPException:
         raise
@@ -1072,6 +1113,74 @@ async def create_annotated_image(request: AnnotateRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to create annotated screenshot: {str(e)}"
+        )
+
+
+class AnnotationMetadataRequest(BaseModel):
+    """Request body for getting annotation metadata only (no screenshot)."""
+    comparison_results: dict = Field(
+        ...,
+        description="The comparison results JSON from /api/compare/urls",
+    )
+    categories: Optional[list[str]] = Field(
+        None,
+        description="Filter annotations by category (e.g., ['text', 'size', 'spacing']). If None, returns all.",
+    )
+    serial_numbers: Optional[list[int]] = Field(
+        None,
+        description="Filter annotations by specific serial numbers (e.g., [1, 3, 5, 7]). If None, returns all.",
+    )
+
+
+@app.post("/api/annotate/metadata")
+async def get_annotation_metadata(request: AnnotationMetadataRequest):
+    """
+    Get annotation metadata for client-side rendering without generating a screenshot.
+    
+    This endpoint returns the bounding box coordinates, categories, and serial numbers
+    for all differences, which can be used by the frontend to draw annotation boxes
+    dynamically on the web page screenshot.
+    
+    **Use this for:**
+    - Client-side filtering (filter by category or serial number in the UI)
+    - Real-time box visibility toggling without server round-trips
+    - Custom annotation rendering in the frontend
+    
+    **Response includes:**
+    - annotations: Array of annotation objects with x, y, width, height, category, serial_numbers
+    - category_colors: Color mapping for each category (for consistent styling)
+    - total_count: Total number of annotations (before filtering)
+    - filtered_count: Number of annotations after applying filters
+    """
+    try:
+        annotations, total_count = build_annotations(
+            request.comparison_results,
+            filter_categories=request.categories,
+            filter_serial_numbers=request.serial_numbers
+        )
+        
+        response = {
+            "success": True,
+            "annotations": annotations,
+            "total_count": total_count,
+            "filtered_count": len(annotations),
+            "category_colors": CATEGORY_COLORS,
+        }
+        
+        if request.categories:
+            response["filters_applied"] = response.get("filters_applied", {})
+            response["filters_applied"]["categories"] = request.categories
+        if request.serial_numbers:
+            response["filters_applied"] = response.get("filters_applied", {})
+            response["filters_applied"]["serial_numbers"] = request.serial_numbers
+            
+        return response
+        
+    except Exception as e:
+        logger.exception("Failed to build annotation metadata")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to build annotation metadata: {str(e)}"
         )
 
 
