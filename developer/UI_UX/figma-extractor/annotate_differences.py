@@ -65,15 +65,16 @@ DEFAULT_CONFIG = {
 
 def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     """
-    Flatten the comparison results into a deduplicated list of annotations.
-    Each annotation = one bounding box on the page.
+    Flatten the comparison results into a list of annotations.
+    Each annotation = one bounding box on the page per category.
 
     Supports two input formats:
     1. { "text": [...], "images": [...], ... } - flat category arrays
     2. { "by_category": { "text": [...], ... } } - nested structure
 
-    We deduplicate by (web_node_id + position) so that one element with
-    multiple issues still gets ONE box but multiple serial numbers.
+    We deduplicate by (category + position) so each category gets its own
+    colored box, even if multiple categories affect the same element.
+    Within the same category, items on the same element are merged.
     
     Uses serial_number from comparison results if available (from API),
     otherwise assigns sequential numbers (1 to N).
@@ -84,9 +85,10 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
         tuple: (annotations list, total difference count)
     """
     annotations = []
-    seen_boxes: dict[str, int] = {}
+    seen_boxes: dict[str, int] = {}  # Key includes category for separate boxes per category
     serial_counter = 0  # Fallback counter if serial_number not in data
     max_serial = 0  # Track highest serial number seen
+    skipped_no_position = []  # Track items skipped due to no position
 
     # Handle both input formats
     if "by_category" in comparison_results:
@@ -94,6 +96,12 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     else:
         categories = {k: v for k, v in comparison_results.items() 
                       if isinstance(v, list)}
+
+    # Log available categories
+    print(f"[VQA] Categories found: {list(categories.keys())}")
+    for cat, items in categories.items():
+        if isinstance(items, list):
+            print(f"[VQA]   - {cat}: {len(items)} items")
 
     # Process categories in consistent order (same as API)
     ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
@@ -105,6 +113,8 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
         if cat not in all_categories and cat != "missing_elements":
             all_categories.append(cat)
 
+    print(f"[VQA] Processing categories (excluding missing_elements): {[c for c in all_categories if c in categories]}")
+
     for category in all_categories:
         if category not in categories:
             continue
@@ -112,6 +122,9 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
         items = categories[category]
         if not isinstance(items, list):
             continue
+
+        # Normalize category for color lookup
+        normalized_category = category.lower().replace(" ", "_")
 
         for item in items:
             # Use serial_number from API if available, otherwise increment counter
@@ -124,7 +137,12 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
             
             pos = item.get("web_position")
             if not pos:
-                print(f"[VQA] Warning: No position for #{serial_number} ({category}): {item.get('text', item.get('element', 'unknown'))}")
+                skipped_no_position.append({
+                    "serial": serial_number,
+                    "category": category,
+                    "text": item.get("text", item.get("element", "unknown")),
+                    "sub_type": item.get("sub_type", "")
+                })
                 continue
 
             node_id = item.get("web_node_id", "")
@@ -135,8 +153,9 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
             figma_value = item.get("figma_value", "")
             web_value = item.get("web_value", "")
 
-            # Dedup key: same element bounding box
-            box_key = f"{node_id}|{pos['x']}|{pos['y']}|{pos['width']}|{pos['height']}"
+            # Dedup key: INCLUDE CATEGORY so each category gets its own box
+            # This ensures size differences get cyan boxes, text gets purple, etc.
+            box_key = f"{normalized_category}|{node_id}|{pos['x']}|{pos['y']}|{pos['width']}|{pos['height']}"
 
             # Build descriptive issue label with serial number
             if delta:
@@ -144,13 +163,12 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
             else:
                 issue_label = f"#{serial_number} {sub_type}: Figma={figma_value}, Web={web_value}"
 
-            # Normalize category for color lookup
-            normalized_category = category.lower().replace(" ", "_")
-
             if box_key in seen_boxes:
+                # Merge with same-category box on same element
                 idx = seen_boxes[box_key]
                 annotations[idx]["issues"].append(issue_label)
                 annotations[idx]["serial_numbers"].append(serial_number)
+                print(f"[VQA]   #{serial_number} ({category}/{sub_type}) merged with same-category box")
             else:
                 seen_boxes[box_key] = len(annotations)
                 annotations.append({
@@ -165,6 +183,13 @@ def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
                     "issues": [issue_label],
                     "serial_numbers": [serial_number],
                 })
+                print(f"[VQA]   #{serial_number} ({category}/{sub_type}) new {normalized_category.upper()} box at ({pos['x']:.0f}, {pos['y']:.0f})")
+
+    # Report skipped items
+    if skipped_no_position:
+        print(f"\n[VQA] WARNING: {len(skipped_no_position)} items skipped (no web_position):")
+        for skip in skipped_no_position:
+            print(f"[VQA]   #{skip['serial']} ({skip['category']}/{skip['sub_type']}): {skip['text']}")
 
     return annotations, max_serial
 
