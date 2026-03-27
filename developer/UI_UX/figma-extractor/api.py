@@ -779,8 +779,8 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
         if request.post_login_steps:
             post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
 
-        # Capture web screenshot when Gemini is enabled
-        capture_web_screenshot = request.use_gemini
+        # Always capture web screenshot for response
+        capture_web_screenshot = True
 
         web_extracted = await extract_from_url(
             url=str(request.web_url),
@@ -813,6 +813,14 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
         if request.tolerance:
             comparator.tolerance.update(request.tolerance)
         results = comparator.compare_all()
+        
+        # Add screenshot IDs to the response
+        if figma_extracted.get("screenshot_id"):
+            results["figma_screenshot_id"] = figma_extracted["screenshot_id"]
+            results["figma_screenshot_url"] = figma_extracted["screenshot_url"]
+        if web_extracted.get("screenshot_id"):
+            results["web_screenshot_id"] = web_extracted["screenshot_id"]
+            results["web_screenshot_url"] = web_extracted["screenshot_url"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
 
