@@ -47,6 +47,7 @@ interface FormData {
   loginUrl: string
   username: string
   password: string
+  useGemini: boolean
 }
 
 interface AnnotatedImageState {
@@ -75,7 +76,8 @@ function App() {
     webUrl: '',
     loginUrl: '',
     username: '',
-    password: ''
+    password: '',
+    useGemini: false
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -88,8 +90,11 @@ function App() {
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = e.target
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: type === 'checkbox' ? checked : value 
+    }))
   }
 
   const handleCompare = async () => {
@@ -125,7 +130,8 @@ function App() {
       ],
       wait_for_selector: "body",
       viewport: { width: 1440, height: 800 },
-      max_depth: 50
+      max_depth: 50,
+      use_gemini: formData.useGemini
     }
 
     try {
@@ -358,6 +364,23 @@ function App() {
                     placeholder="Enter password"
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="options-section">
+              <h3>Options</h3>
+              <div className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="useGemini"
+                  name="useGemini"
+                  checked={formData.useGemini}
+                  onChange={handleInputChange}
+                />
+                <label htmlFor="useGemini">
+                  Use Gemini AI Refinement
+                  <span className="option-description">Enable AI-powered visual validation to reduce false positives</span>
+                </label>
               </div>
             </div>
 

@@ -845,7 +845,7 @@ async def extract_from_url(
         Figma-compatible JSON structure
     """
     async with async_playwright() as p:
-        browser: Browser = await p.chromium.launch(headless=True)
+        browser: Browser = await p.chromium.launch(headless=False)
         
         context = await browser.new_context(
             viewport=viewport or {"width": 1920, "height": 1080},

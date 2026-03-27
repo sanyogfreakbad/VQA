@@ -49,7 +49,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 1.5rem 2rem;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .form-section {
@@ -132,6 +132,51 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+}
+
+.options-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.options-section h3 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #374151;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: #0066cc;
+}
+
+.checkbox-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.option-description {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .form-actions {
