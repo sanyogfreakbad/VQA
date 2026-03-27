@@ -25,13 +25,19 @@ interface ByCategory {
   [key: string]: ComparisonItem[]
 }
 
+interface CategorySummary {
+  text: number
+  spacing: number
+  size: number
+  missing_elements: number
+  other: number
+}
+
 interface ComparisonResult {
   by_category: ByCategory
   summary?: {
     total_differences: number
-    critical: number
-    warning: number
-    info: number
+    categories?: CategorySummary
   }
 }
 
@@ -42,6 +48,20 @@ interface FormData {
   username: string
   password: string
 }
+
+const CATEGORY_CONFIG: Record<string, { label: string; class: string }> = {
+  text: { label: 'Text', class: 'category-text' },
+  spacing: { label: 'Spacing', class: 'category-spacing' },
+  size: { label: 'Size', class: 'category-size' },
+  missing_elements: { label: 'Missing', class: 'category-missing' },
+  padding: { label: 'Padding', class: 'category-other' },
+  color: { label: 'Color', class: 'category-color' },
+  components: { label: 'Components', class: 'category-components' },
+  buttons_cta: { label: 'Buttons', class: 'category-buttons' },
+  other: { label: 'Other', class: 'category-other' }
+}
+
+const OTHER_CATEGORIES = ['padding', 'color', 'components', 'buttons_cta']
 
 function App() {
   const [formData, setFormData] = useState<FormData>({
@@ -129,24 +149,50 @@ function App() {
     return items
   }
 
-  const getSeverityColor = (severity: string): string => {
-    switch (severity.toLowerCase()) {
-      case 'critical':
-        return 'severity-critical'
-      case 'warning':
-        return 'severity-warning'
-      case 'info':
-        return 'severity-info'
-      default:
-        return ''
+  const getCategoryCounts = (): Record<string, number> => {
+    if (!result?.by_category) return {}
+    
+    const counts: Record<string, number> = {
+      text: 0,
+      spacing: 0,
+      size: 0,
+      missing_elements: 0,
+      other: 0
     }
+
+    Object.entries(result.by_category).forEach(([category, items]) => {
+      const normalizedCategory = category.toLowerCase().replace(/\s+/g, '_')
+      if (Object.prototype.hasOwnProperty.call(counts, normalizedCategory)) {
+        counts[normalizedCategory] = items.length
+      } else if (OTHER_CATEGORIES.includes(normalizedCategory)) {
+        counts.other += items.length
+      } else {
+        counts.other += items.length
+      }
+    })
+
+    return counts
+  }
+
+  const getTotalDifferences = (): number => {
+    if (!result?.by_category) return 0
+    return Object.values(result.by_category).reduce((sum, items) => sum + items.length, 0)
+  }
+
+  const getCategoryClass = (category: string): string => {
+    const normalizedCategory = category.toLowerCase().replace(/\s+/g, '_')
+    return CATEGORY_CONFIG[normalizedCategory]?.class || 'category-other'
   }
 
   return (
     <div className="app-container">
       <header className="header">
-        <h1>Figma vs Web Comparator</h1>
-        <p>Compare your Figma designs with live web implementations</p>
+        <div className="header-content">
+          <div>
+            <h1>Figma vs Web Comparator</h1>
+            <p>Compare your Figma designs with live web implementations</p>
+          </div>
+        </div>
       </header>
 
       <main className="main-content">
@@ -154,40 +200,42 @@ function App() {
           <div className="form-card">
             <h2>Configuration</h2>
             
-            <div className="form-group">
-              <label htmlFor="figmaUrl">Figma URL *</label>
-              <input
-                type="url"
-                id="figmaUrl"
-                name="figmaUrl"
-                value={formData.figmaUrl}
-                onChange={handleInputChange}
-                placeholder="https://www.figma.com/design/..."
-              />
-            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="figmaUrl">Figma URL *</label>
+                <input
+                  type="url"
+                  id="figmaUrl"
+                  name="figmaUrl"
+                  value={formData.figmaUrl}
+                  onChange={handleInputChange}
+                  placeholder="https://www.figma.com/design/..."
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="webUrl">Web URL *</label>
-              <input
-                type="url"
-                id="webUrl"
-                name="webUrl"
-                value={formData.webUrl}
-                onChange={handleInputChange}
-                placeholder="https://example.com/page"
-              />
-            </div>
+              <div className="form-group">
+                <label htmlFor="webUrl">Web URL *</label>
+                <input
+                  type="url"
+                  id="webUrl"
+                  name="webUrl"
+                  value={formData.webUrl}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com/page"
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="loginUrl">Login URL (optional)</label>
-              <input
-                type="url"
-                id="loginUrl"
-                name="loginUrl"
-                value={formData.loginUrl}
-                onChange={handleInputChange}
-                placeholder="https://example.com/login"
-              />
+              <div className="form-group">
+                <label htmlFor="loginUrl">Login URL</label>
+                <input
+                  type="url"
+                  id="loginUrl"
+                  name="loginUrl"
+                  value={formData.loginUrl}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com/login"
+                />
+              </div>
             </div>
 
             <div className="credentials-section">
@@ -219,20 +267,22 @@ function App() {
               </div>
             </div>
 
-            <button 
-              className="compare-btn"
-              onClick={handleCompare}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="spinner"></span>
-                  Comparing...
-                </>
-              ) : (
-                'Compare'
-              )}
-            </button>
+            <div className="form-actions">
+              <button 
+                className="compare-btn"
+                onClick={handleCompare}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Comparing...
+                  </>
+                ) : (
+                  'Compare'
+                )}
+              </button>
+            </div>
 
             {error && (
               <div className="error-message">
@@ -247,22 +297,21 @@ function App() {
             <div className="results-card">
               <div className="results-header">
                 <h2>Comparison Results</h2>
-                {result.summary && (
-                  <div className="summary-badges">
-                    <span className="badge badge-total">
-                      Total: {result.summary.total_differences}
-                    </span>
-                    <span className="badge badge-critical">
-                      Critical: {result.summary.critical}
-                    </span>
-                    <span className="badge badge-warning">
-                      Warning: {result.summary.warning}
-                    </span>
-                    <span className="badge badge-info">
-                      Info: {result.summary.info}
-                    </span>
-                  </div>
-                )}
+                <div className="summary-badges">
+                  <span className="badge badge-total">
+                    Total: {getTotalDifferences()}
+                  </span>
+                  {Object.entries(getCategoryCounts()).map(([category, count]) => (
+                    count > 0 && (
+                      <span 
+                        key={category} 
+                        className={`badge badge-${category}`}
+                      >
+                        {CATEGORY_CONFIG[category]?.label || category}: {count}
+                      </span>
+                    )
+                  ))}
+                </div>
               </div>
 
               <div className="table-container">
@@ -280,10 +329,14 @@ function App() {
                   <tbody>
                     {getAllItems().length > 0 ? (
                       getAllItems().map(({ category, item }, index) => (
-                        <tr key={index} className={getSeverityColor(item.severity)}>
-                          <td>{category}</td>
+                        <tr key={index} className={getCategoryClass(category)}>
+                          <td>
+                            <span className={`category-tag ${getCategoryClass(category)}`}>
+                              {category}
+                            </span>
+                          </td>
                           <td>{item.sub_type}</td>
-                          <td className="text-cell">{item.text}</td>
+                          <td className="text-cell" title={item.text}>{item.text}</td>
                           <td>{String(item.figma_value)}</td>
                           <td>{String(item.web_value)}</td>
                           <td className="delta-cell">{item.delta}</td>
