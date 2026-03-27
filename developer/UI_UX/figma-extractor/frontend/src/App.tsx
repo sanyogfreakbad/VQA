@@ -74,6 +74,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ComparisonResult | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -89,6 +90,7 @@ function App() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setSelectedCategory(null)
 
     const requestBody = {
       figma_url: formData.figmaUrl,
@@ -147,6 +149,30 @@ function App() {
       })
     })
     return items
+  }
+
+  const getFilteredItems = (): { category: string; item: ComparisonItem }[] => {
+    const allItems = getAllItems()
+    if (!selectedCategory) return allItems
+    
+    if (selectedCategory === 'total') return allItems
+    
+    if (selectedCategory === 'other') {
+      return allItems.filter(({ category }) => {
+        const normalizedCategory = category.toLowerCase().replace(/\s+/g, '_')
+        return OTHER_CATEGORIES.includes(normalizedCategory) || 
+               !['text', 'spacing', 'size', 'missing_elements'].includes(normalizedCategory)
+      })
+    }
+    
+    return allItems.filter(({ category }) => {
+      const normalizedCategory = category.toLowerCase().replace(/\s+/g, '_')
+      return normalizedCategory === selectedCategory
+    })
+  }
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(prev => prev === category ? null : category)
   }
 
   const getCategoryCounts = (): Record<string, number> => {
@@ -298,14 +324,18 @@ function App() {
               <div className="results-header">
                 <h2>Comparison Results</h2>
                 <div className="summary-badges">
-                  <span className="badge badge-total">
+                  <span 
+                    className={`badge badge-total ${selectedCategory === 'total' ? 'badge-selected' : ''}`}
+                    onClick={() => handleCategoryClick('total')}
+                  >
                     Total: {getTotalDifferences()}
                   </span>
                   {Object.entries(getCategoryCounts()).map(([category, count]) => (
                     count > 0 && (
                       <span 
                         key={category} 
-                        className={`badge badge-${category}`}
+                        className={`badge badge-${category} ${selectedCategory === category ? 'badge-selected' : ''}`}
+                        onClick={() => handleCategoryClick(category)}
                       >
                         {CATEGORY_CONFIG[category]?.label || category}: {count}
                       </span>
@@ -327,8 +357,8 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {getAllItems().length > 0 ? (
-                      getAllItems().map(({ category, item }, index) => (
+                    {getFilteredItems().length > 0 ? (
+                      getFilteredItems().map(({ category, item }, index) => (
                         <tr key={index} className={getCategoryClass(category)}>
                           <td>
                             <span className={`category-tag ${getCategoryClass(category)}`}>
@@ -345,7 +375,7 @@ function App() {
                     ) : (
                       <tr>
                         <td colSpan={6} className="no-data">
-                          No differences found
+                          {selectedCategory ? 'No differences in this category' : 'No differences found'}
                         </td>
                       </tr>
                     )}

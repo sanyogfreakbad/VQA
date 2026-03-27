@@ -254,6 +254,19 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge-selected {
+  box-shadow: 0 0 0 2px #1e3a5f, 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
 }
 
 .badge-total {
