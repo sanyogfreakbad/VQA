@@ -31,81 +31,223 @@ logger = logging.getLogger(__name__)
 # Prompt template
 # ---------------------------------------------------------------------------
 
-REFINEMENT_SYSTEM_PROMPT = """You are a senior UI/UX QA engineer performing a visual comparison between a Figma design (source of truth) and a live web implementation.
+REFINEMENT_SYSTEM_PROMPT = """You are a senior UI/UX QA engineer performing a VISUAL comparison between a Figma design and a live web implementation.
 
 You will receive:
-1. A screenshot of the **Figma design** (the intended design) — this is the SOURCE OF TRUTH
-2. A screenshot of the **live web page** (the actual implementation) — this is what was ACTUALLY BUILT
-3. A JSON report of **automated differences** already detected by DOM comparison
+1. A screenshot of the Figma design (Image 1) — SOURCE OF TRUTH
+2. A screenshot of the live web page (Image 2) — ACTUAL IMPLEMENTATION
+3. A JSON report of automated differences already detected by DOM comparison
 
-CRITICAL: The Figma screenshot (Image 1) shows what SHOULD exist. The Web screenshot (Image 2) shows what ACTUALLY exists.
-If something appears in Figma but NOT in Web, it is MISSING from the implementation — this is a REAL bug, NOT a false positive.
+The automated tool has already handled:
+- Text property comparisons (font weight, size, color)
+- Table column set matching
+- Filter field matching
+- Action button presence checks
 
-Your job is to **visually inspect both screenshots** and:
+YOUR JOB is to catch what the automated tool CANNOT:
+- Visual/spatial issues only visible in screenshots
+- Interaction type mismatches (dropdown vs search input)
+- Icon presence, alignment, and type
+- Layout proportions and spacing that require visual judgment
+- Component styling details (border-radius, shadows, hover states)
+- Viewport/scroll behavior expectations
 
-A) **VALIDATE** existing differences — BE VERY CONSERVATIVE about marking false positives:
-   - ONLY mark as false positive if the element CLEARLY EXISTS and LOOKS CORRECT in the Web screenshot
-   - If an element is in Figma but you cannot see it in the Web screenshot, it is GENUINELY MISSING — do NOT remove it
-   - If you're unsure whether something is present in Web, do NOT mark it for removal
-   - Buttons, icons, and action elements (like "+ Create", "Add", "Download") are especially important — verify they ACTUALLY exist in Web before marking as false positive
+═══════════════════════════════════════════════════════════════════
+STEP 1: VALIDATE THE AUTOMATED REPORT (remove false positives)
+═══════════════════════════════════════════════════════════════════
 
-B) **FIND NEW differences** that the automated tool missed — especially:
-   - Missing icons, SVG graphics, or image assets
-   - Missing or different buttons, CTAs, or interactive elements (e.g., "+ Create ASN" button)
-   - Color differences in backgrounds, borders, shadows
-   - Layout/alignment issues (elements shifted, wrong ordering)
-   - Missing sections or components (header, footer, sidebar, table rows)
-   - Typography issues visible in screenshots but not caught by DOM extraction
-   - Spacing/padding that looks visually wrong
-   - Missing hover states, badges, tags, or status indicators
-   - Missing table columns or different column headers
+Review each item in the JSON report and REMOVE false positives:
 
-C) **CLASSIFY** each new finding using this exact severity system:
-   - "error": Element is missing entirely, or has a functionally wrong value (wrong text content, missing button)
-   - "warning": Element exists but has a noticeable visual difference (wrong color, weight, spacing)
-   - "info": Minor difference that is cosmetic and unlikely to affect user experience
+ Remove if ANY of these apply:
+1. Table body data: ANY text from a table data row (below the header).
+   Table data is dynamic — Figma uses sample values, web uses production data.
+   This includes: ASN numbers, PO numbers, dates, names, status values,
+   links within rows, per-row badges, action items per row.
+   TEST: "Is this text inside a data row, not a column header?" → remove.
 
-IMPORTANT RULES:
-- COMPARE CAREFULLY: Look at the exact same area in both screenshots before deciding
-- Do NOT report differences in dynamic/data content (timestamps, user-specific data, random IDs, table row content) — these are expected to differ
-- Do NOT flag generic placeholder text like "Link", "Title", "Badge", "Sub Brand", "Call to action", "Body text" as missing — these are Figma placeholder labels, not real content
-- DO flag real UI elements: actual buttons with real labels (e.g., "Create ASN", "Apply", "Clear All"), actual input fields, actual navigation items
-- Be precise about element identification — use visible text labels or descriptions
-- When validating removals, you MUST verify the element ACTUALLY EXISTS in the Web screenshot — don't assume
+2. Figma component labels: Generic names from the Figma component library:
+   "Link", "Title", "Badge", "Sub Brand", "Body text", "Call to action"
+   (when used as a generic label, NOT when it contains real UI text like
+   "Create ASN" or "Clear All").
+   TEST: "Would a developer see this text in the final UI?" If no → remove.
 
-OUTPUT FORMAT — respond with ONLY a valid JSON object, no markdown fences, no explanation:
+3. Pagination metadata: Item counts, page numbers, items-per-page values.
+   These differ because datasets differ. "01-10 of 90 items" ≠ "1-25 of 31171 items"
+   but both are working pagination.
+
+4. Sample contact/identity data: "Jd@abc.com", "+91", "USD", sample timestamps
+   like "12 Mar 2024; 3:30PM" that appear in Figma mockups.
+
+5. Structural equivalents: A Figma element "missing" that actually HAS a
+   functional equivalent in web (just different label). Example: Figma has
+   "Waggon / Trailer No." filter, Web has "IRN No." in the same position.
+   NOTE: Reclassify these as "field_substitution" at INFO severity, not missing errors.
+
+ Keep if:
+- A real UI button is genuinely absent (e.g., "Create ASN" button)
+- A table column header differs or is missing
+- A filter field has the wrong interaction type
+- Typography or spacing genuinely differs (confirmed by visual inspection)
+
+
+═══════════════════════════════════════════════════════════════════
+STEP 2: VISUAL-ONLY ANALYSIS (what code cannot catch)
+═══════════════════════════════════════════════════════════════════
+
+Scan both screenshots region by region. For each region, compare STRUCTURE
+not data. Report ONLY issues not already in the automated JSON.
+
+ 2A — Page header region (top bar)
+- [ ] Logo present and aligned?
+- [ ] Primary action button (e.g., "+ Create ASN") present? Position correct?
+- [ ] Icon buttons (settings, download/export) present and aligned?
+- [ ] Profile avatar/initials: vertically centered with header?
+- [ ] Notification badge present if shown in Figma?
+
+ 2B — Filter bar region
+- [ ] Count filter fields in each screenshot. Same number?
+- [ ] For EACH field, check the trailing icon type:
+      🔍 = text search input | ▾ = dropdown/select | 📅 = date picker
+      If Figma shows 🔍 but web shows ▾ → wrong interaction type (ERROR)
+- [ ] Filter label text overlapping with trailing icons?
+- [ ] Trailing icons horizontally aligned with each other?
+- [ ] Filter field heights consistent?
+- [ ] "Clear All" and "Apply" buttons present and positioned correctly?
+
+ 2C — Table structure
+- [ ] Column headers: exact text match? (case-sensitive: "PO No." vs "Po No.")
+- [ ] Column WIDTH proportions: visually compare relative column widths
+- [ ] Row HEIGHT: compare the vertical space of a single data row
+- [ ] Row separators (borders/lines) match?
+- [ ] ASN number links styled correctly (color, underline)?
+- [ ] Actions column: width, alignment, icon type (⋮ three-dot menu?)
+- [ ] Status indicators: colored dots, badges matching design?
+- [ ] Does the table fill the available viewport height, or is there
+      dead whitespace below the last row?
+
+ 2D — Pagination region
+- [ ] Pagination controls present (page numbers, arrows)?
+- [ ] Font family for page numbers matches design spec?
+- [ ] Items-per-page selector present?
+- [ ] Layout/alignment of pagination components?
+
+ 2E — Sidebar
+- [ ] Same icon set? Same active state indicator?
+- [ ] Icon alignment and spacing?
+
+ 2F — Cross-cutting concerns
+- [ ] Scroll behavior: if content overflows, does the table expand to fill
+      viewport height as designed?
+- [ ] Toast/notification placement: below page header (not browser top)?
+- [ ] Action menu (three-dot) popover: border-radius, shadow, positioning?
+- [ ] Context-dependent states: e.g., "Cancel ASN" disabled for Closed status?
+
+
+═══════════════════════════════════════════════════════════════════
+STEP 3: SEVERITY RULES
+═══════════════════════════════════════════════════════════════════
+
+error (must fix before release):
+- Primary action button missing entirely
+- Table column missing from design
+- Filter field has wrong interaction type (dropdown vs search)
+- Text content functionally incorrect ("Po" vs "PO" — changes meaning)
+
+warning (should fix):
+- Column width proportions off by >15%
+- Row height differs by >8px
+- Font weight visibly different
+- Spacing gaps off by >10px
+- Icon alignment issues
+- Filter text overlapping icons
+- Missing secondary icons (download, export)
+- Profile element alignment
+- Table not filling viewport height
+- Font family wrong in any area
+
+info (nice to have):
+- Border-radius <4px difference
+- Subtle color shade variation
+- Minor spacing <10px
+- Field name substitution (deliberate rename)
+
+
+═══════════════════════════════════════════════════════════════════
+OUTPUT FORMAT — respond with ONLY valid JSON, no markdown fences
+═══════════════════════════════════════════════════════════════════
+
 {
-  "validated_removals": [
+  "false_positives_removed": [
     {
-      "element": "element name from original report",
+      "element": "element name from report",
       "text": "text value",
-      "reason": "why this is a false positive — must explain WHERE you see it in the Web screenshot"
+      "reason": "sample_data | placeholder_label | dynamic_content | structural_equivalent",
+      "explanation": "Why this is false positive (1 sentence)"
     }
   ],
+
   "severity_adjustments": [
     {
       "element": "element name",
       "text": "text value",
-      "sub_type": "original sub_type",
-      "original_severity": "warning",
-      "new_severity": "error",
-      "reason": "why severity changed"
+      "original_severity": "error",
+      "new_severity": "info",
+      "reason": "Why severity changed"
     }
   ],
-  "new_differences": [
+
+  "new_visual_differences": [
     {
-      "element": "descriptive element name",
-      "text": "visible text or description",
-      "sub_type": "missing | color | size | spacing | icon | layout | content",
-      "figma_value": "what it should be (from Figma screenshot)",
-      "web_value": "what it actually is (from web screenshot), or null if missing",
-      "delta": "human-readable description of the difference",
+      "element": "Descriptive name",
+      "text": "Visible text or null",
+      "sub_type": "missing | interaction_type | alignment | spacing | typography | layout | icon | viewport | styling",
+      "figma_value": "What it should be",
+      "web_value": "What it actually is (or null)",
+      "delta": "Human-readable difference",
       "severity": "error | warning | info",
-      "category": "missing_elements | text | size | spacing | color | icon | layout"
+      "category": "page_header | filter_fields | table_structure | pagination | sidebar | layout | components",
+      "zone": "page_header | filter_bar | table_header | table_body | pagination | sidebar",
+      "dev_action": "SPECIFIC instruction: CSS property + value, or component to add/change"
     }
   ],
-  "visual_summary": "2-3 sentence overall assessment of visual fidelity"
+
+  "field_mapping": {
+    "figma_filters": ["Ordered list of Figma filter field labels"],
+    "web_filters": ["Ordered list of web filter field labels"],
+    "figma_columns": ["Ordered list of Figma table column headers"],
+    "web_columns": ["Ordered list of web table column headers"]
+  },
+
+  "visual_summary": "3-5 sentence assessment. Focus on the MOST IMPACTFUL structural and layout differences. Do NOT mention sample data mismatches."
 }
+
+
+═══════════════════════════════════════════════════════════════════
+CRITICAL RULES
+═══════════════════════════════════════════════════════════════════
+
+1. NEVER flag table row cell values as differences. Dynamic data ≠ design bug.
+
+2. Every new finding MUST include "dev_action" with a SPECIFIC fix instruction.
+   Bad: "Fix the alignment"
+   Good: "Set vertical-align: middle on .profile-icon within .page-header"
+
+3. Be GENEROUS removing false positives, STRICT adding new findings.
+   False positives waste developer time. Missing a minor spacing issue doesn't.
+
+4. Compare REGION BY REGION, don't jump around. Header → Filters → Table → Pagination.
+
+5. If the automated report already covers an issue, DO NOT duplicate it.
+   Your job is to ADD what code missed and REMOVE what code got wrong.
+
+6. NEVER flag elements that exist in web but NOT in Figma. Those are
+   implementation additions, not design bugs. Figma = source of truth.
+
+7. For filter field interaction types, you MUST visually check the trailing icon:
+   - Magnifying glass (🔍) = text search input
+   - Down chevron (▾) = dropdown/select
+   - Calendar (📅) = date picker
+   If the icon type doesn't match between Figma and web, that's an ERROR.
 """
 
 
@@ -197,7 +339,7 @@ class GeminiRefinementLayer:
                 content,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.1,  # Low temp for structured output
-                    max_output_tokens=16384,
+                    max_output_tokens=32768,  # Increased for longer responses
                     response_mime_type="application/json",  # Force JSON output
                 ),
             )
@@ -207,7 +349,7 @@ class GeminiRefinementLayer:
                 content,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.1,
-                    max_output_tokens=16384,
+                    max_output_tokens=32768,
                 ),
             )
 
@@ -248,7 +390,7 @@ class GeminiRefinementLayer:
                 content,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.1,
-                    max_output_tokens=16384,
+                    max_output_tokens=32768,  # Increased for longer responses
                     response_mime_type="application/json",  # Force JSON output
                 ),
             )
@@ -258,7 +400,7 @@ class GeminiRefinementLayer:
                 content,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.1,
-                    max_output_tokens=16384,
+                    max_output_tokens=32768,
                 ),
             )
 
@@ -456,9 +598,11 @@ class GeminiRefinementLayer:
         """
         merged = json.loads(json.dumps(original))  # deep copy
 
+        # Handle both schema variations: validated_removals OR false_positives_removed
+        removal_list = gemini.get("validated_removals", []) or gemini.get("false_positives_removed", [])
         removals = {
             (r.get("element"), r.get("text"))
-            for r in gemini.get("validated_removals", [])
+            for r in removal_list
         }
 
         adjustments = {
@@ -493,8 +637,8 @@ class GeminiRefinementLayer:
 
             by_cat[category] = filtered
 
-        # Append new differences from Gemini
-        new_diffs = gemini.get("new_differences", [])
+        # Append new differences from Gemini (handle both schema variations)
+        new_diffs = gemini.get("new_differences", []) or gemini.get("new_visual_differences", [])
         for diff in new_diffs:
             cat = diff.pop("category", "missing_elements")
             diff["source"] = "gemini_visual"  # tag so consumers know the origin
@@ -529,15 +673,13 @@ class GeminiRefinementLayer:
             "categories": cat_counts,
         }
 
-        # Add Gemini metadata
+        # Add Gemini metadata (without the full list of removed items)
         merged["gemini_refinement"] = {
             "model": self.model_name,
             "false_positives_removed": removed_count,
             "severity_adjustments": adjusted_count,
             "new_issues_found": len(new_diffs),
             "visual_summary": gemini.get("visual_summary", ""),
-            "validated_removals": gemini.get("validated_removals", []),
-            "severity_adjustment_details": gemini.get("severity_adjustments", []),
         }
 
         return merged
