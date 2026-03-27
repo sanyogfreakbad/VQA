@@ -9,6 +9,7 @@ interface WebPosition {
 }
 
 interface ComparisonItem {
+  serial_number?: number
   element: string
   text: string
   sub_type: string
@@ -491,6 +492,7 @@ function App() {
                 <table className="results-table">
                   <thead>
                     <tr>
+                      <th className="serial-col">#</th>
                       <th>Category</th>
                       <th>Sub Category</th>
                       <th>Text</th>
@@ -503,6 +505,7 @@ function App() {
                     {getFilteredItems().length > 0 ? (
                       getFilteredItems().map(({ category, item }, index) => (
                         <tr key={index} className={getCategoryClass(category)}>
+                          <td className="serial-cell">{item.serial_number || index + 1}</td>
                           <td>
                             <span className={`category-tag ${getCategoryClass(category)}`}>
                               {category}
@@ -517,7 +520,7 @@ function App() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="no-data">
+                        <td colSpan={7} className="no-data">
                           {selectedCategory ? 'No differences in this category' : 'No differences found'}
                         </td>
                       </tr>

@@ -83,6 +83,54 @@ def get_screenshot(screenshot_id: str) -> Optional[bytes]:
     return None
 
 
+def add_serial_numbers(comparison_results: dict) -> dict:
+    """
+    Add serial numbers to all difference items in the comparison results.
+    
+    Serial numbers are assigned sequentially (1 to N) across all categories,
+    making it easy to reference specific differences in the UI and annotations.
+    
+    Args:
+        comparison_results: The comparison results dict with by_category
+        
+    Returns:
+        Updated comparison results with serial_number field added to each item
+    """
+    if "by_category" not in comparison_results:
+        return comparison_results
+    
+    serial_number = 0
+    by_category = comparison_results["by_category"]
+    
+    # Process all categories in a consistent order
+    ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
+                         "components", "size", "other", "missing_elements"]
+    
+    # First process ordered categories, then any remaining
+    all_categories = list(ordered_categories)
+    for cat in by_category.keys():
+        if cat not in all_categories:
+            all_categories.append(cat)
+    
+    for category in all_categories:
+        if category not in by_category:
+            continue
+            
+        items = by_category[category]
+        if not isinstance(items, list):
+            continue
+            
+        for item in items:
+            serial_number += 1
+            item["serial_number"] = serial_number
+    
+    # Update total in summary
+    if "summary" in comparison_results:
+        comparison_results["summary"]["total_with_serial"] = serial_number
+    
+    return comparison_results
+
+
 def parse_figma_url(figma_url: str) -> dict:
     """
     Parse a Figma URL and extract file_key and node_id.
@@ -871,6 +919,9 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
         if request.tolerance:
             comparator.tolerance.update(request.tolerance)
         results = comparator.compare_all()
+        
+        # Add serial numbers to all differences for UI display and annotation reference
+        results = add_serial_numbers(results)
         
         # Add screenshot IDs to the response
         if figma_extracted.get("screenshot_id"):

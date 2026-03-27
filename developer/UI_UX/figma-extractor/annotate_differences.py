@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Optional
 from playwright.async_api import async_playwright
 
-from web_extractor import execute_post_login_steps
+from web_extractor import execute_login, execute_post_login_steps
 
 
 # Category-based colors matching frontend App.css
@@ -63,7 +63,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def build_annotations(comparison_results: dict) -> list[dict]:
+def build_annotations(comparison_results: dict) -> tuple[list[dict], int]:
     """
     Flatten the comparison results into a deduplicated list of annotations.
     Each annotation = one bounding box on the page.
@@ -73,10 +73,20 @@ def build_annotations(comparison_results: dict) -> list[dict]:
     2. { "by_category": { "text": [...], ... } } - nested structure
 
     We deduplicate by (web_node_id + position) so that one element with
-    multiple issues still gets ONE box but multiple issue labels.
+    multiple issues still gets ONE box but multiple serial numbers.
+    
+    Uses serial_number from comparison results if available (from API),
+    otherwise assigns sequential numbers (1 to N).
+    
+    Processes ALL categories except missing_elements (text, spacing, size, color, etc.)
+    
+    Returns:
+        tuple: (annotations list, total difference count)
     """
     annotations = []
     seen_boxes: dict[str, int] = {}
+    serial_counter = 0  # Fallback counter if serial_number not in data
+    max_serial = 0  # Track highest serial number seen
 
     # Handle both input formats
     if "by_category" in comparison_results:
@@ -85,16 +95,36 @@ def build_annotations(comparison_results: dict) -> list[dict]:
         categories = {k: v for k, v in comparison_results.items() 
                       if isinstance(v, list)}
 
-    for category, items in categories.items():
-        if category == "missing_elements":
-            continue
+    # Process categories in consistent order (same as API)
+    ordered_categories = ["text", "spacing", "padding", "color", "buttons_cta", 
+                         "components", "size", "other"]
+    
+    # Add any extra categories not in the ordered list
+    all_categories = list(ordered_categories)
+    for cat in categories.keys():
+        if cat not in all_categories and cat != "missing_elements":
+            all_categories.append(cat)
 
+    for category in all_categories:
+        if category not in categories:
+            continue
+            
+        items = categories[category]
         if not isinstance(items, list):
             continue
 
         for item in items:
+            # Use serial_number from API if available, otherwise increment counter
+            serial_number = item.get("serial_number")
+            if serial_number is None:
+                serial_counter += 1
+                serial_number = serial_counter
+            
+            max_serial = max(max_serial, serial_number)
+            
             pos = item.get("web_position")
             if not pos:
+                print(f"[VQA] Warning: No position for #{serial_number} ({category}): {item.get('text', item.get('element', 'unknown'))}")
                 continue
 
             node_id = item.get("web_node_id", "")
@@ -108,11 +138,11 @@ def build_annotations(comparison_results: dict) -> list[dict]:
             # Dedup key: same element bounding box
             box_key = f"{node_id}|{pos['x']}|{pos['y']}|{pos['width']}|{pos['height']}"
 
-            # Build descriptive issue label
+            # Build descriptive issue label with serial number
             if delta:
-                issue_label = f"{sub_type}: {delta}"
+                issue_label = f"#{serial_number} {sub_type}: {delta}"
             else:
-                issue_label = f"{sub_type}: Figma={figma_value}, Web={web_value}"
+                issue_label = f"#{serial_number} {sub_type}: Figma={figma_value}, Web={web_value}"
 
             # Normalize category for color lookup
             normalized_category = category.lower().replace(" ", "_")
@@ -120,6 +150,7 @@ def build_annotations(comparison_results: dict) -> list[dict]:
             if box_key in seen_boxes:
                 idx = seen_boxes[box_key]
                 annotations[idx]["issues"].append(issue_label)
+                annotations[idx]["serial_numbers"].append(serial_number)
             else:
                 seen_boxes[box_key] = len(annotations)
                 annotations.append({
@@ -132,13 +163,18 @@ def build_annotations(comparison_results: dict) -> list[dict]:
                     "locator": locator,
                     "node_id": node_id,
                     "issues": [issue_label],
+                    "serial_numbers": [serial_number],
                 })
 
-    return annotations
+    return annotations, max_serial
 
 
 def get_overlay_js() -> str:
-    """Generate the JavaScript for overlay injection with category colors."""
+    """Generate the JavaScript for overlay injection with category colors.
+    
+    Uses serial numbers from the comparison results to label each annotation box.
+    If an element has multiple differences, all serial numbers are shown (e.g., "3,5,7").
+    """
     colors_js = json.dumps(CATEGORY_COLORS)
     return f"""
 (annotations) => {{
@@ -147,8 +183,10 @@ def get_overlay_js() -> str:
 
     const COLORS = {colors_js};
 
-    annotations.forEach((ann, idx) => {{
-        const num = idx + 1;
+    annotations.forEach((ann) => {{
+        // Use serial numbers from the annotation (e.g., [3, 5, 7] -> "3,5,7")
+        const serialNums = ann.serial_numbers || [ann.idx + 1];
+        const badgeText = serialNums.join(',');
         const color = COLORS[ann.category] || COLORS.other;
 
         // --- Bounding box ---
@@ -167,10 +205,10 @@ def get_overlay_js() -> str:
             boxSizing: 'border-box',
         }});
 
-        // --- Number badge ---
+        // --- Number badge (shows all serial numbers for this element) ---
         const badge = document.createElement('div');
         badge.className = 'vqa-overlay';
-        badge.textContent = num;
+        badge.textContent = badgeText;
         Object.assign(badge.style, {{
             position: 'absolute',
             left:   (ann.x - 2) + 'px',
@@ -208,6 +246,8 @@ async def create_annotated_screenshot(
     """
     Create an annotated screenshot from comparison results.
     
+    Uses the same login and post-login flow as web_extractor.py for consistency.
+    
     Args:
         config: Configuration dict with url, login_url, credentials, post_login_steps, viewport
         comparison_results: The comparison results from /api/compare/urls
@@ -216,8 +256,8 @@ async def create_annotated_screenshot(
     Returns:
         Screenshot bytes (PNG) or None if failed
     """
-    annotations = build_annotations(comparison_results)
-    print(f"[VQA] {len(annotations)} unique bounding boxes to draw.")
+    annotations, total_differences = build_annotations(comparison_results)
+    print(f"[VQA] {total_differences} total differences, {len(annotations)} unique bounding boxes to draw.")
 
     if len(annotations) == 0:
         print("[VQA] No annotations found in the comparison results.")
@@ -234,105 +274,65 @@ async def create_annotated_screenshot(
         page = await context.new_page()
 
         try:
-            # Step 1: Login if credentials provided
+            # Step 1: Login if credentials provided (using same flow as web_extractor.py)
             credentials = config.get("credentials")
             login_url = config.get("login_url")
+            target_url = config.get("url") or config.get("web_url")
             
-            if credentials and login_url:
-                print(f"[VQA] Navigating to login page: {login_url}")
-                await page.goto(login_url, wait_until="networkidle")
+            if credentials and credentials.get("username") and credentials.get("password"):
+                auth_url = login_url or target_url
+                print(f"[VQA] Navigating to login page: {auth_url}")
+                await page.goto(auth_url, wait_until="domcontentloaded")
                 
-                # Fill username
-                username_selectors = [
-                    'input[name="username"]',
-                    'input[type="text"]',
-                    'input[id="username"]',
-                    'input[placeholder*="user" i]',
-                ]
-                for selector in username_selectors:
-                    try:
-                        if await page.locator(selector).first.is_visible(timeout=2000):
-                            await page.fill(selector, credentials.get("username", ""))
-                            print(f"[VQA] Filled username using: {selector}")
-                            break
-                    except Exception:
-                        continue
+                # Use execute_login from web_extractor (same as web extraction)
+                login_success = await execute_login(
+                    page,
+                    credentials["username"],
+                    credentials["password"],
+                    credentials.get("selectors"),
+                )
                 
-                # Fill password
-                password_selectors = [
-                    'input[name="password"]',
-                    'input[type="password"]',
-                    'input[id="password"]',
-                ]
-                for selector in password_selectors:
-                    try:
-                        if await page.locator(selector).first.is_visible(timeout=2000):
-                            await page.fill(selector, credentials.get("password", ""))
-                            print(f"[VQA] Filled password using: {selector}")
-                            break
-                    except Exception:
-                        continue
+                if not login_success:
+                    print("[VQA] Warning: Login may have failed - could not find login form elements")
+                else:
+                    print("[VQA] Logged in successfully.")
                 
-                # Click sign in button
-                submit_selector = credentials.get("selectors", {}).get("submit")
-                signin_selectors = [
-                    submit_selector,
-                    "[role='button']:has-text('Sign In')",
-                    "button:has-text('Sign In')",
-                    "button:has-text('Login')",
-                    "button[type='submit']",
-                ] if submit_selector else [
-                    "[role='button']:has-text('Sign In')",
-                    "button:has-text('Sign In')",
-                    "button:has-text('Login')",
-                    "button[type='submit']",
-                ]
-                
-                for selector in signin_selectors:
-                    if not selector:
-                        continue
-                    try:
-                        if await page.locator(selector).first.is_visible(timeout=2000):
-                            await page.click(selector)
-                            print(f"[VQA] Clicked sign in using: {selector}")
-                            break
-                    except Exception:
-                        continue
-                
-                await page.wait_for_load_state("networkidle")
-                print("[VQA] Logged in.")
-
                 # Step 2: Execute post-login steps (using same logic as web_extractor)
                 post_login_steps = config.get("post_login_steps", [])
                 if post_login_steps:
                     print("[VQA] Executing post-login steps...")
                     steps_success = await execute_post_login_steps(page, post_login_steps)
-                    if steps_success:
-                        print("[VQA] Post-login steps completed successfully.")
-                    else:
+                    if not steps_success:
                         print("[VQA] Warning: Some post-login steps may have failed.")
+                
+                # Navigate to target if different from login
+                if login_url and login_url != target_url and target_url:
+                    print(f"[VQA] Navigating to target: {target_url}...")
+                    await page.goto(target_url, wait_until="domcontentloaded")
+            else:
+                # No credentials, just navigate to target
+                if target_url:
+                    print(f"[VQA] Navigating to {target_url}...")
+                    await page.goto(target_url, wait_until="domcontentloaded")
 
-            # Step 3: Navigate to target page
-            target_url = config.get("url") or config.get("web_url")
-            if target_url:
-                print(f"[VQA] Navigating to {target_url}...")
-                await page.goto(target_url, wait_until="networkidle")
-                await page.wait_for_timeout(2000)
+            # Wait for page to stabilize
+            await page.wait_for_load_state("networkidle")
+            await page.wait_for_timeout(2000)
 
-            # Step 4: Resolve positions (use existing or fall back to locators)
+            # Step 3: Resolve positions (use existing or fall back to locators)
             annotations = await _resolve_positions_fallback_to_locators(page, annotations)
 
-            # Step 5: Inject overlay
+            # Step 4: Inject overlay
             overlay_js = get_overlay_js()
             count = await page.evaluate(overlay_js, annotations)
             print(f"[VQA] Injected {count} annotation overlays.")
 
-            # Step 6: Full-page screenshot
+            # Step 5: Full-page screenshot
             screenshot_bytes = await page.screenshot(full_page=True)
             print("[VQA] Screenshot captured.")
 
             # Print legend
-            _print_legend(annotations, comparison_results)
+            _print_legend(annotations, comparison_results, total_differences)
 
         except Exception as e:
             print(f"[VQA] Error during annotation: {e}")
@@ -377,20 +377,23 @@ async def _resolve_positions_fallback_to_locators(page, annotations: list[dict])
     return annotations
 
 
-def _print_legend(annotations: list[dict], comparison_results: dict):
-    """Print a numbered legend mapping each box to its issues."""
+def _print_legend(annotations: list[dict], comparison_results: dict, total_differences: int = 0):
+    """Print a numbered legend mapping each box to its issues with serial numbers."""
     if "by_category" in comparison_results:
         missing = comparison_results.get("by_category", {}).get("missing_elements", [])
     else:
         missing = comparison_results.get("missing_elements", [])
 
     print("\n" + "=" * 60)
-    print("  ANNOTATION LEGEND")
+    print(f"  ANNOTATION LEGEND ({total_differences} total differences)")
     print("=" * 60)
 
-    for idx, ann in enumerate(annotations):
+    for ann in annotations:
         category_tag = ann["category"].upper()
-        print(f"\n  [{idx + 1}] {ann['element']}  ({category_tag})")
+        serial_nums = ann.get("serial_numbers", [])
+        serial_label = ",".join(str(n) for n in serial_nums)
+        
+        print(f"\n  [{serial_label}] {ann['element']}  ({category_tag})")
         print(f"      Locator : {ann.get('locator', 'N/A')}")
         print(f"      Position: x={ann['x']:.0f}, y={ann['y']:.0f}, "
               f"{ann['width']:.0f}×{ann['height']:.0f}")
