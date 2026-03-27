@@ -84,15 +84,6 @@ interface AnnotatedImageState {
   imageHeight: number
 }
 
-interface FigmaImageState {
-  imageUrl: string | null
-  annotations: Annotation[]
-  loading: boolean
-  error: string | null
-  imageWidth: number
-  imageHeight: number
-}
-
 const CATEGORY_CONFIG: Record<string, { label: string; class: string }> = {
   text: { label: 'Text', class: 'category-text' },
   spacing: { label: 'Spacing', class: 'category-spacing' },
@@ -131,17 +122,9 @@ function App() {
     imageWidth: 0,
     imageHeight: 0
   })
-  const [figmaImage, setFigmaImage] = useState<FigmaImageState>({
-    imageUrl: null,
-    annotations: [],
-    loading: false,
-    error: null,
-    imageWidth: 0,
-    imageHeight: 0
-  })
+  const [figmaImageUrl, setFigmaImageUrl] = useState<string | null>(null)
   const [splitView, setSplitView] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
-  const figmaImageRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,14 +157,7 @@ function App() {
       imageWidth: 0,
       imageHeight: 0
     })
-    setFigmaImage({
-      imageUrl: null,
-      annotations: [],
-      loading: false,
-      error: null,
-      imageWidth: 0,
-      imageHeight: 0
-    })
+    setFigmaImageUrl(null)
 
     const requestBody = {
       figma_url: formData.figmaUrl,
@@ -300,24 +276,8 @@ function App() {
         imageHeight: 0
       })
 
-      // Also fetch Figma annotation metadata for missing elements
-      const figmaMetadataResponse = await fetch('/api/annotate/figma-metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comparison_results: result })
-      })
-
-      if (figmaMetadataResponse.ok) {
-        const figmaMetadata = await figmaMetadataResponse.json()
-        setFigmaImage({
-          imageUrl: result.figma_screenshot_url || null,
-          annotations: figmaMetadata.annotations || [],
-          loading: false,
-          error: null,
-          imageWidth: 0,
-          imageHeight: 0
-        })
-      }
+      // Set Figma screenshot URL for split view
+      setFigmaImageUrl(result.figma_screenshot_url || null)
     } catch (err) {
       setAnnotatedImage(prev => ({
         ...prev,
@@ -334,17 +294,6 @@ function App() {
         ...prev,
         imageWidth: imageRef.current?.naturalWidth || 0,
         imageHeight: imageRef.current?.naturalHeight || 0
-      }))
-    }
-  }, [])
-
-  // Handle Figma image load to get dimensions
-  const handleFigmaImageLoad = useCallback(() => {
-    if (figmaImageRef.current) {
-      setFigmaImage(prev => ({
-        ...prev,
-        imageWidth: figmaImageRef.current?.naturalWidth || 0,
-        imageHeight: figmaImageRef.current?.naturalHeight || 0
       }))
     }
   }, [])
@@ -392,28 +341,6 @@ function App() {
 
     return filtered
   }, [annotatedImage.annotations, selectedCategory, selectedSerialNumbers])
-
-  // Get filtered Figma annotations (missing elements only)
-  const getFilteredFigmaAnnotations = useCallback((): Annotation[] => {
-    let filtered = figmaImage.annotations
-
-    // Show missing elements only when:
-    // 1. No category filter (show all)
-    // 2. 'total' is selected
-    // 3. 'missing_elements' is selected
-    if (selectedCategory && selectedCategory !== 'total' && selectedCategory !== 'missing_elements') {
-      return [] // Hide Figma annotations when other categories are selected
-    }
-
-    // Filter by selected serial numbers (if any selected)
-    if (selectedSerialNumbers.size > 0) {
-      filtered = filtered.filter(ann => 
-        ann.serial_numbers.some(sn => selectedSerialNumbers.has(sn))
-      )
-    }
-
-    return filtered
-  }, [figmaImage.annotations, selectedCategory, selectedSerialNumbers])
 
   // Get color for annotation category
   const getAnnotationColor = (category: string): string => {
@@ -646,7 +573,7 @@ function App() {
               <div className="annotated-image-header">
                 <h2>Annotated Screenshot</h2>
                 <div className="header-controls">
-                  {figmaImage.imageUrl && (
+                  {figmaImageUrl && (
                     <button 
                       className={`split-view-btn ${splitView ? 'active' : ''}`}
                       onClick={() => setSplitView(!splitView)}
@@ -674,7 +601,7 @@ function App() {
               {annotatedImage.annotations.length > 0 && !annotatedImage.loading && (
                 <p className="annotation-tip">
                   Click category badges to filter by type. Click rows or boxes to select specific items.
-                  {figmaImage.imageUrl && ' Enable Split View to see Figma design with missing elements.'}
+                  {figmaImageUrl && ' Enable Split View to compare with Figma design.'}
                 </p>
               )}
               {annotatedImage.loading && (
@@ -691,82 +618,17 @@ function App() {
               {annotatedImage.baseImageUrl && (
                 <div className={`images-container ${splitView ? 'split-view' : ''}`} ref={containerRef}>
                   {/* Figma Screenshot (shown in split view) */}
-                  {splitView && figmaImage.imageUrl && (
+                  {splitView && figmaImageUrl && (
                     <div className="image-panel figma-panel">
                       <div className="panel-header">
                         <span className="panel-label">Figma Design</span>
-                        <span className="panel-count">
-                          {getFilteredFigmaAnnotations().length} missing elements
-                        </span>
                       </div>
                       <div className="image-wrapper">
                         <img 
-                          ref={figmaImageRef}
-                          src={figmaImage.imageUrl} 
+                          src={figmaImageUrl} 
                           alt="Figma design screenshot" 
                           className="annotated-image"
-                          onLoad={handleFigmaImageLoad}
                         />
-                        {/* SVG Overlay for Figma missing elements */}
-                        {figmaImage.imageWidth > 0 && (
-                          <svg 
-                            className="annotation-overlay"
-                            viewBox={`0 0 ${figmaImage.imageWidth} ${figmaImage.imageHeight}`}
-                            preserveAspectRatio="xMinYMin meet"
-                          >
-                            {getFilteredFigmaAnnotations().map((ann, idx) => {
-                              const color = annotatedImage.categoryColors['missing_elements']?.border || '#ef4444'
-                              const isHighlighted = isAnnotationHighlighted(ann)
-                              const badgeText = ann.serial_numbers.join(',')
-                              
-                              return (
-                                <g 
-                                  key={idx} 
-                                  className={`annotation-group ${isHighlighted ? 'highlighted' : ''}`}
-                                  onMouseEnter={() => setHoveredSerial(ann.serial_numbers[0])}
-                                  onMouseLeave={() => setHoveredSerial(null)}
-                                  onClick={() => ann.serial_numbers.forEach(sn => toggleSerialNumber(sn))}
-                                  style={{ cursor: 'pointer' }}
-                                >
-                                  <rect
-                                    x={ann.x}
-                                    y={ann.y}
-                                    width={ann.width}
-                                    height={ann.height}
-                                    fill="rgba(239, 68, 68, 0.1)"
-                                    stroke={color}
-                                    strokeWidth={isHighlighted ? 4 : 2}
-                                    strokeDasharray={isHighlighted ? "0" : "5,5"}
-                                    rx={3}
-                                    className="annotation-box"
-                                  />
-                                  <g transform={`translate(${ann.x - 2}, ${ann.y - 22})`}>
-                                    <rect
-                                      x={0}
-                                      y={0}
-                                      width={Math.max(24, badgeText.length * 8 + 12)}
-                                      height={20}
-                                      fill={color}
-                                      rx={10}
-                                      className="annotation-badge-bg"
-                                    />
-                                    <text
-                                      x={Math.max(12, (badgeText.length * 8 + 12) / 2)}
-                                      y={14}
-                                      fill="white"
-                                      fontSize={11}
-                                      fontWeight={700}
-                                      textAnchor="middle"
-                                      className="annotation-badge-text"
-                                    >
-                                      {badgeText}
-                                    </text>
-                                  </g>
-                                </g>
-                              )
-                            })}
-                          </svg>
-                        )}
                       </div>
                     </div>
                   )}
@@ -861,9 +723,9 @@ function App() {
                   >
                     Download Web Image
                   </a>
-                  {figmaImage.imageUrl && (
+                  {figmaImageUrl && (
                     <a 
-                      href={figmaImage.imageUrl} 
+                      href={figmaImageUrl} 
                       download="figma_screenshot.png"
                       className="download-btn download-figma"
                     >

@@ -138,15 +138,26 @@ class DiffItem:
     figma_position: Optional[Dict[str, float]] = None
 
 
-def _figma_pos(elem: Optional['NormalizedElement']) -> Optional[Dict[str, float]]:
-    """Extract position dict from a NormalizedElement (for Figma elements)."""
+def _figma_pos(elem: Optional['NormalizedElement'], frame_offset: tuple[float, float] = (0, 0)) -> Optional[Dict[str, float]]:
+    """Extract position dict from a NormalizedElement (for Figma elements).
+    
+    Args:
+        elem: The NormalizedElement to extract position from
+        frame_offset: (x, y) offset of the root frame to subtract from absolute coordinates
+    """
     if elem is None:
         return None
     if elem.x is None and elem.y is None:
         return None
+    
+    # Adjust for frame offset (absoluteBoundingBox is relative to canvas, not the rendered frame)
+    offset_x, offset_y = frame_offset
+    adjusted_x = (elem.x or 0) - offset_x
+    adjusted_y = (elem.y or 0) - offset_y
+    
     return {
-        "x": round(elem.x, 2) if elem.x is not None else 0,
-        "y": round(elem.y, 2) if elem.y is not None else 0,
+        "x": round(adjusted_x, 2),
+        "y": round(adjusted_y, 2),
         "width": round(elem.width, 2) if elem.width is not None else 0,
         "height": round(elem.height, 2) if elem.height is not None else 0,
     }
@@ -580,6 +591,10 @@ class DesignComparator:
         self.web_extractor = DesignDataExtractor(web_data, "web")
         self.diffs: List[DiffItem] = []
         
+        # Calculate the frame offset for Figma coordinates
+        # This is needed because absoluteBoundingBox is relative to canvas, not the rendered frame
+        self.figma_frame_offset = self._calculate_figma_frame_offset(figma_data)
+        
         self.tolerance = {
             "font_size": 2,
             "spacing": 4,
@@ -587,6 +602,37 @@ class DesignComparator:
             "ratio": 0.05,
             "color": 0.1,
         }
+    
+    def _calculate_figma_frame_offset(self, figma_data: Dict) -> tuple[float, float]:
+        """Calculate the origin offset of the root Figma frame.
+        
+        The Figma screenshot renders a specific node, and child elements have
+        absoluteBoundingBox coordinates relative to the canvas. We need to
+        subtract the root frame's origin to get coordinates relative to the screenshot.
+        """
+        nodes = figma_data.get("nodes", [])
+        
+        # Find the root frame (largest FRAME element, typically the first one)
+        for node in nodes:
+            if node.get("type") == "FRAME":
+                x = node.get("x", 0)
+                y = node.get("y", 0)
+                w = node.get("width", 0)
+                h = node.get("height", 0)
+                # Use the first large frame as the root
+                if w > 500 and h > 300:
+                    print(f"[VQA] Figma frame offset: ({x}, {y}) - frame size: {w}x{h}")
+                    return (x, y)
+        
+        # If no suitable frame found, use the first element's position as reference
+        if nodes:
+            first_x = nodes[0].get("x", 0)
+            first_y = nodes[0].get("y", 0)
+            if first_x != 0 or first_y != 0:
+                print(f"[VQA] Using first element offset: ({first_x}, {first_y})")
+                return (first_x, first_y)
+        
+        return (0, 0)
     
     def compare_all(self) -> Dict:
         """Run all comparisons and return structured results."""
@@ -688,7 +734,7 @@ class DesignComparator:
                         web_value=None,
                         delta="Missing in Web",
                         severity="error",
-                        figma_position=_figma_pos(f_elem)
+                        figma_position=_figma_pos(f_elem, self.figma_frame_offset)
                     ))
     
     def _compare_text_properties(self, figma: NormalizedElement, web: NormalizedElement, include_match_info: bool = False):
@@ -832,7 +878,7 @@ class DesignComparator:
                     web_value=None,
                     delta="Missing in Web",
                     severity="error",
-                    figma_position=_figma_pos(f_card)
+                    figma_position=_figma_pos(f_card, self.figma_frame_offset)
                 ))
     
     def _compare_card_properties(self, figma: NormalizedElement, web: NormalizedElement):
