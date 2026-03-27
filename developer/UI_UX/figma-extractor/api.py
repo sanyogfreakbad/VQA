@@ -30,6 +30,14 @@ from gemini_refinement import GeminiRefinementLayer
 
 load_dotenv()
 
+# Configure logging to show Gemini refinement details
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+# Enable debug for gemini_refinement module
+logging.getLogger('gemini_refinement').setLevel(logging.DEBUG)
+
 logger = logging.getLogger(__name__)
 
 # Screenshot storage with LRU-like behavior (max 100 screenshots in memory)
@@ -337,13 +345,10 @@ class CompareUrlsRequest(BaseModel):
 
     # ---- Gemini refinement fields ----
     use_gemini: bool = Field(
-        False,
+        True,
         description="Enable Gemini vision refinement layer. "
-                    "Sends screenshots + comparison JSON to Gemini for visual validation.",
-    )
-    gemini_model: str = Field(
-        "gemini-2.5-flash",
-        description="Gemini model to use for visual refinement (uses GEMINI_API_KEY from .env)",
+                    "Sends screenshots + comparison JSON to Gemini for visual validation. "
+                    "Uses GEMINI_API_KEY and GEMINI_MODEL from .env",
     )
 
     model_config = {
@@ -391,10 +396,6 @@ class RefineRequest(BaseModel):
     web_screenshot_id: str = Field(
         ...,
         description="Screenshot ID of the web page (from extraction endpoint)",
-    )
-    gemini_model: str = Field(
-        "gemini-2.5-flash",
-        description="Gemini model to use",
     )
 
 
@@ -839,7 +840,7 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
             return results
 
         try:
-            gemini = GeminiRefinementLayer(model_name=request.gemini_model)
+            gemini = GeminiRefinementLayer()
             results = await gemini.refine_async(
                 comparison_results=results,
                 figma_screenshot=figma_screenshot_bytes,
@@ -876,7 +877,7 @@ async def refine_with_gemini(request: RefineRequest):
         raise HTTPException(status_code=404, detail="Web screenshot not found in cache")
 
     try:
-        gemini = GeminiRefinementLayer(model_name=request.gemini_model)
+        gemini = GeminiRefinementLayer()
         refined = await gemini.refine_async(
             comparison_results=request.comparison_results,
             figma_screenshot=figma_bytes,
