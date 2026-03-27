@@ -655,46 +655,91 @@ async def execute_post_login_steps(
     - {"action": "fill", "selector": "input", "value": "text"} - Fill input field
     - {"action": "wait", "duration": 2000} - Wait for specified milliseconds
     """
-    try:
-        for step in steps:
-            action = step.get("action", "")
-            selector = step.get("selector")
-            text = step.get("text")
-            role = step.get("role")
-            name = step.get("name")
-            test_id = step.get("test_id")
-            nth = step.get("nth")
-            
+    all_success = True
+    
+    for step in steps:
+        action = step.get("action", "")
+        selector = step.get("selector")
+        text = step.get("text")
+        role = step.get("role")
+        name = step.get("name")
+        test_id = step.get("test_id")
+        nth = step.get("nth")
+        
+        try:
             if action == "wait_for":
                 if selector:
                     await page.wait_for_selector(selector, timeout=timeout)
+                    print(f"[VQA] Waited for selector: {selector}")
                 elif text:
                     await page.get_by_text(text).wait_for(timeout=timeout)
+                    print(f"[VQA] Waited for text: {text}")
                 elif test_id:
                     await page.get_by_test_id(test_id).wait_for(timeout=timeout)
+                    print(f"[VQA] Waited for test_id: {test_id}")
             
             elif action == "click":
                 # Determine what to click based on provided parameters
-                if role and name:
-                    await page.get_by_role(role, name=name).click(timeout=timeout)
-                elif test_id:
-                    await page.get_by_test_id(test_id).click(timeout=timeout)
-                elif selector and nth is not None:
-                    await page.locator(selector).nth(nth).click(timeout=timeout)
-                elif selector:
-                    await page.locator(selector).first.click(timeout=timeout)
-                elif text:
-                    # Try exact match first, then partial
-                    try:
-                        await page.get_by_text(text, exact=True).click(timeout=timeout)
-                    except Exception:
-                        await page.get_by_text(text).first.click(timeout=timeout)
+                locator = None
+                click_desc = ""
                 
-                # Wait for any navigation/loading
-                try:
-                    await page.wait_for_load_state("networkidle", timeout=5000)
-                except Exception:
-                    pass
+                if role and name:
+                    locator = page.get_by_role(role, name=name)
+                    click_desc = f"role={role}, name={name}"
+                elif test_id:
+                    locator = page.get_by_test_id(test_id)
+                    click_desc = f"test_id={test_id}"
+                elif selector and nth is not None:
+                    locator = page.locator(selector).nth(nth)
+                    click_desc = f"selector={selector}, nth={nth}"
+                elif selector:
+                    # For react-select and similar dynamic components, try multiple selector variations
+                    original_selector = selector
+                    locator = page.locator(selector).first
+                    click_desc = f"selector={selector}"
+                    
+                    # Check if element exists, if not try alternative selectors for react-select
+                    try:
+                        count = await locator.count()
+                        if count == 0 and "css-" in selector:
+                            # Try more stable react-select selectors
+                            alt_selectors = [
+                                '[class*="-control"]',
+                                '[class*="control"]',
+                                'div[class*="react-select"]',
+                                '[class*="indicatorContainer"]',
+                            ]
+                            for alt in alt_selectors:
+                                alt_locator = page.locator(alt).first
+                                if await alt_locator.count() > 0:
+                                    locator = alt_locator
+                                    click_desc = f"selector={alt} (fallback from {original_selector})"
+                                    print(f"[VQA] Using fallback selector: {alt}")
+                                    break
+                    except Exception:
+                        pass
+                elif text:
+                    locator = page.get_by_text(text, exact=True)
+                    click_desc = f"text={text}"
+                
+                if locator:
+                    # Wait for element to be visible before clicking
+                    try:
+                        await locator.wait_for(state="visible", timeout=timeout)
+                    except Exception:
+                        # If exact text match fails, try partial match
+                        if text and not selector:
+                            locator = page.get_by_text(text).first
+                            await locator.wait_for(state="visible", timeout=timeout)
+                    
+                    await locator.click(timeout=timeout)
+                    print(f"[VQA] Clicked: {click_desc}")
+                    
+                    # Wait for any navigation/loading
+                    try:
+                        await page.wait_for_load_state("networkidle", timeout=5000)
+                    except Exception:
+                        pass
             
             elif action == "select":
                 if not selector:
@@ -702,34 +747,48 @@ async def execute_post_login_steps(
                     
                 if "value" in step:
                     await page.select_option(selector, value=step["value"], timeout=timeout)
+                    print(f"[VQA] Selected value: {step['value']} in {selector}")
                 elif "index" in step:
                     await page.select_option(selector, index=step["index"], timeout=timeout)
+                    print(f"[VQA] Selected index: {step['index']} in {selector}")
                 elif "label" in step:
                     await page.select_option(selector, label=step["label"], timeout=timeout)
+                    print(f"[VQA] Selected label: {step['label']} in {selector}")
             
             elif action == "fill":
                 if selector and "value" in step:
                     await page.fill(selector, step["value"], timeout=timeout)
+                    print(f"[VQA] Filled {selector} with value")
                 elif test_id and "value" in step:
                     await page.get_by_test_id(test_id).fill(step["value"], timeout=timeout)
+                    print(f"[VQA] Filled test_id={test_id} with value")
             
             elif action == "wait":
                 duration = step.get("duration", 1000)
                 await page.wait_for_timeout(duration)
+                print(f"[VQA] Waited {duration}ms")
             
             # Small delay between steps for stability
             await page.wait_for_timeout(500)
-        
-        # Wait for page to stabilize after all steps
-        try:
-            await page.wait_for_load_state("networkidle", timeout=15000)
-        except Exception:
-            pass
-        return True
-        
-    except Exception as e:
-        print(f"Post-login step error: {e}")
-        return False
+            
+        except Exception as e:
+            print(f"[VQA] Warning: {action} action failed: {e}")
+            all_success = False
+            # Continue with next step instead of aborting
+            continue
+    
+    # Wait for page to stabilize after all steps
+    try:
+        await page.wait_for_load_state("networkidle", timeout=15000)
+    except Exception:
+        pass
+    
+    if all_success:
+        print("[VQA] Post-login steps completed successfully.")
+    else:
+        print("[VQA] Post-login steps completed with some failures.")
+    
+    return all_success
 
 
 async def wait_for_react_render(page: Page, timeout: int = 10000) -> None:

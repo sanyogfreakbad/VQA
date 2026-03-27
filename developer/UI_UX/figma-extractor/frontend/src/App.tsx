@@ -49,6 +49,12 @@ interface FormData {
   password: string
 }
 
+interface AnnotatedImageState {
+  url: string | null
+  loading: boolean
+  error: string | null
+}
+
 const CATEGORY_CONFIG: Record<string, { label: string; class: string }> = {
   text: { label: 'Text', class: 'category-text' },
   spacing: { label: 'Spacing', class: 'category-spacing' },
@@ -75,6 +81,11 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ComparisonResult | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [annotatedImage, setAnnotatedImage] = useState<AnnotatedImageState>({
+    url: null,
+    loading: false,
+    error: null
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -91,6 +102,7 @@ function App() {
     setError(null)
     setResult(null)
     setSelectedCategory(null)
+    setAnnotatedImage({ url: null, loading: false, error: null })
 
     const requestBody = {
       figma_url: formData.figmaUrl,
@@ -136,6 +148,62 @@ function App() {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleShowImage = async () => {
+    if (!result) return
+
+    setAnnotatedImage({ url: null, loading: true, error: null })
+
+    const requestBody = {
+      comparison_results: result,
+      web_url: formData.webUrl,
+      login_url: formData.loginUrl || undefined,
+      credentials: formData.username ? {
+        username: formData.username,
+        password: formData.password,
+        selectors: {
+          submit: "[role='button']:has-text('Sign In')"
+        }
+      } : undefined,
+      post_login_steps: [
+        { action: "wait", duration: 2000 },
+        { action: "click", selector: ".css-ai6why-control", nth: 0 },
+        { action: "click", text: "DPW CIC CB Enterprises" },
+        { action: "click", selector: ".css-ai6why-control", nth: 0 },
+        { action: "click", text: "CIC - CB Warehouse 1" },
+        { action: "click", test_id: "next" }
+      ],
+      viewport: { width: 1440, height: 800 }
+    }
+
+    try {
+      const response = await fetch('/api/annotate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setAnnotatedImage({
+        url: data.annotated_screenshot_url,
+        loading: false,
+        error: null
+      })
+    } catch (err) {
+      setAnnotatedImage({
+        url: null,
+        loading: false,
+        error: err instanceof Error ? err.message : 'Failed to generate annotated image'
+      })
     }
   }
 
@@ -308,6 +376,22 @@ function App() {
                   'Compare'
                 )}
               </button>
+              {result && (
+                <button 
+                  className="show-image-btn"
+                  onClick={handleShowImage}
+                  disabled={annotatedImage.loading}
+                >
+                  {annotatedImage.loading ? (
+                    <>
+                      <span className="spinner"></span>
+                      Generating...
+                    </>
+                  ) : (
+                    'Show Image'
+                  )}
+                </button>
+              )}
             </div>
 
             {error && (
@@ -317,6 +401,42 @@ function App() {
             )}
           </div>
         </section>
+
+        {/* Annotated Image Section */}
+        {(annotatedImage.url || annotatedImage.loading || annotatedImage.error) && (
+          <section className="annotated-image-section">
+            <div className="annotated-image-card">
+              <h2>Annotated Screenshot</h2>
+              {annotatedImage.loading && (
+                <div className="image-loading">
+                  <span className="spinner"></span>
+                  <p>Generating annotated screenshot...</p>
+                </div>
+              )}
+              {annotatedImage.error && (
+                <div className="error-message">
+                  {annotatedImage.error}
+                </div>
+              )}
+              {annotatedImage.url && (
+                <div className="annotated-image-container">
+                  <img 
+                    src={annotatedImage.url} 
+                    alt="Annotated screenshot showing differences" 
+                    className="annotated-image"
+                  />
+                  <a 
+                    href={annotatedImage.url} 
+                    download="annotated_screenshot.png"
+                    className="download-btn"
+                  >
+                    Download Image
+                  </a>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {result && (
           <section className="results-section">

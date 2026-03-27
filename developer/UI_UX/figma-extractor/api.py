@@ -27,6 +27,7 @@ from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_i
 from web_extractor import extract_from_url
 from design_comparator import DesignComparator
 from gemini_refinement import GeminiRefinementLayer
+from annotate_differences import create_annotated_screenshot
 
 load_dotenv()
 
@@ -397,6 +398,62 @@ class RefineRequest(BaseModel):
         ...,
         description="Screenshot ID of the web page (from extraction endpoint)",
     )
+
+
+class AnnotateRequest(BaseModel):
+    """Request body for creating annotated screenshot."""
+    comparison_results: dict = Field(
+        ...,
+        description="The comparison results JSON from /api/compare/urls",
+    )
+    web_url: HttpUrl = Field(
+        ...,
+        description="Target web URL to annotate",
+    )
+    login_url: Optional[HttpUrl] = Field(
+        None,
+        description="URL of login page if different from target URL",
+    )
+    credentials: Optional[Credentials] = Field(
+        None,
+        description="Login credentials if the page requires authentication",
+    )
+    post_login_steps: Optional[list[PostLoginStep]] = Field(
+        None,
+        description="Steps to execute after login (e.g., workspace/organization selection)",
+    )
+    viewport: Optional[dict] = Field(
+        {"width": 1440, "height": 800},
+        description="Viewport dimensions for the screenshot",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "comparison_results": {"by_category": {}},
+                    "web_url": "https://qa-wms.dpworld.com/asn",
+                    "login_url": "https://qa-wms.dpworld.com/in-warehouse",
+                    "credentials": {
+                        "username": "sunit_1",
+                        "password": "Test@123",
+                        "selectors": {
+                            "submit": "[role='button']:has-text('Sign In')"
+                        }
+                    },
+                    "post_login_steps": [
+                        {"action": "wait", "duration": 2000},
+                        {"action": "click", "selector": ".css-ai6why-control", "nth": 0},
+                        {"action": "click", "text": "DPW CIC CB Enterprises"},
+                        {"action": "click", "selector": ".css-ai6why-control", "nth": 0},
+                        {"action": "click", "text": "CIC - CB Warehouse 1"},
+                        {"action": "click", "test_id": "next"}
+                    ],
+                    "viewport": {"width": 1440, "height": 800}
+                }
+            ]
+        }
+    }
 
 
 app.add_middleware(
@@ -888,6 +945,83 @@ async def refine_with_gemini(request: RefineRequest):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini refinement failed: {str(e)}")
+
+
+@app.post("/api/annotate")
+async def create_annotated_image(request: AnnotateRequest):
+    """
+    Create an annotated screenshot highlighting differences on the web page.
+
+    Takes comparison results from /api/compare/urls and generates a screenshot
+    of the web page with visual annotations (colored bounding boxes) around
+    elements that have differences.
+
+    Colors are based on difference categories:
+    - Text: Purple (#8b5cf6)
+    - Spacing: Pink (#ec4899)
+    - Size: Cyan (#06b6d4)
+    - Missing: Red (#ef4444)
+    - Color: Green (#10b981)
+    - Components: Orange (#f97316)
+    - Buttons: Sky Blue (#0ea5e9)
+    - Other: Amber (#f59e0b)
+
+    Returns the annotated screenshot as a PNG image URL.
+    """
+    try:
+        # Build config from request
+        config = {
+            "url": str(request.web_url),
+            "web_url": str(request.web_url),
+            "viewport": request.viewport or {"width": 1440, "height": 800},
+        }
+
+        if request.login_url:
+            config["login_url"] = str(request.login_url)
+
+        if request.credentials:
+            config["credentials"] = {
+                "username": request.credentials.username,
+                "password": request.credentials.password,
+                "selectors": request.credentials.selectors,
+            }
+
+        if request.post_login_steps:
+            config["post_login_steps"] = [
+                step.model_dump(exclude_none=True) for step in request.post_login_steps
+            ]
+
+        # Create annotated screenshot
+        screenshot_bytes = await create_annotated_screenshot(
+            config=config,
+            comparison_results=request.comparison_results,
+            headless=False
+        )
+
+        if screenshot_bytes is None:
+            raise HTTPException(
+                status_code=400,
+                detail="No annotations found in comparison results or screenshot capture failed"
+            )
+
+        # Store the screenshot and return URL
+        screenshot_id = store_screenshot(screenshot_bytes)
+
+        return {
+            "success": True,
+            "annotated_screenshot_id": screenshot_id,
+            "annotated_screenshot_url": f"/api/extract/{screenshot_id}/image",
+            "message": "Annotated screenshot created successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Annotation failed")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create annotated screenshot: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
