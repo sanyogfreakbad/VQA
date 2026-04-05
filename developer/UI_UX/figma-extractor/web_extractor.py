@@ -288,15 +288,26 @@ DOM_WALKER_SCRIPT = """
     
     function getStyles(el) {
         const cs = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        
         return {
+            // Display & Layout
             display: cs.display,
             position: cs.position,
             flexDirection: cs.flexDirection,
             justifyContent: cs.justifyContent,
             alignItems: cs.alignItems,
+            
+            // Gap (modern CSS)
             gap: cs.gap,
+            rowGap: cs.rowGap,
+            columnGap: cs.columnGap,
+            
+            // Colors
             backgroundColor: cs.backgroundColor,
             color: cs.color,
+            
+            // Border - general
             borderColor: cs.borderColor,
             borderWidth: cs.borderWidth,
             borderStyle: cs.borderStyle,
@@ -305,14 +316,34 @@ DOM_WALKER_SCRIPT = """
             borderTopRightRadius: cs.borderTopRightRadius,
             borderBottomRightRadius: cs.borderBottomRightRadius,
             borderBottomLeftRadius: cs.borderBottomLeftRadius,
+            
+            // Border - individual sides (catches missing dividers/stroke lines)
+            borderTopWidth: cs.borderTopWidth,
+            borderTopStyle: cs.borderTopStyle,
+            borderTopColor: cs.borderTopColor,
+            borderBottomWidth: cs.borderBottomWidth,
+            borderBottomStyle: cs.borderBottomStyle,
+            borderBottomColor: cs.borderBottomColor,
+            borderLeftWidth: cs.borderLeftWidth,
+            borderLeftStyle: cs.borderLeftStyle,
+            borderLeftColor: cs.borderLeftColor,
+            borderRightWidth: cs.borderRightWidth,
+            borderRightStyle: cs.borderRightStyle,
+            borderRightColor: cs.borderRightColor,
+            
+            // Padding
             paddingTop: cs.paddingTop,
             paddingRight: cs.paddingRight,
             paddingBottom: cs.paddingBottom,
             paddingLeft: cs.paddingLeft,
+            
+            // Margin
             marginTop: cs.marginTop,
             marginRight: cs.marginRight,
             marginBottom: cs.marginBottom,
             marginLeft: cs.marginLeft,
+            
+            // Typography
             fontFamily: cs.fontFamily,
             fontSize: cs.fontSize,
             fontWeight: cs.fontWeight,
@@ -322,11 +353,59 @@ DOM_WALKER_SCRIPT = """
             textAlign: cs.textAlign,
             textDecoration: cs.textDecoration,
             textTransform: cs.textTransform,
-            opacity: cs.opacity,
-            overflow: cs.overflow,
+            
+            // Box Shadow (catches missing shadows in cards/action bars)
             boxShadow: cs.boxShadow,
-            transform: cs.transform,
+            
+            // Overflow & Text Overflow (catches cropped/truncated text issues)
+            overflow: cs.overflow,
+            overflowX: cs.overflowX,
+            overflowY: cs.overflowY,
+            textOverflow: cs.textOverflow,
+            whiteSpace: cs.whiteSpace,
+            
+            // Opacity (catches disabled/active state differences)
+            opacity: cs.opacity,
+            
+            // Cursor (catches interactive element cursor states)
+            cursor: cs.cursor,
+            
+            // Position & Z-Index (catches fixed tabs, layering issues)
             zIndex: cs.zIndex,
+            
+            // Transform (catches icon rotation, scale differences)
+            transform: cs.transform,
+            
+            // Visibility / Display
+            visibility: cs.visibility,
+            
+            // Outline (catches focus ring differences)
+            outline: cs.outline,
+            outlineWidth: cs.outlineWidth,
+            outlineStyle: cs.outlineStyle,
+            outlineColor: cs.outlineColor,
+            
+            // Max/Min Width (catches dropdown width matching issues)
+            maxWidth: cs.maxWidth,
+            minWidth: cs.minWidth,
+            maxHeight: cs.maxHeight,
+            minHeight: cs.minHeight,
+            
+            // Background Image (catches gradients, image fills)
+            backgroundImage: cs.backgroundImage,
+            
+            // Aspect Ratio (catches wrong aspect ratio on checkboxes, etc.)
+            aspectRatio: cs.aspectRatio,
+            computedAspectRatio: rect.width > 0 ? (rect.width / rect.height) : null,
+            
+            // Scrollbar detection
+            hasHorizontalScrollbar: el.scrollWidth > el.clientWidth,
+            hasVerticalScrollbar: el.scrollHeight > el.clientHeight,
+            scrollbarGap: el.offsetWidth - el.clientWidth,
+            scrollWidth: el.scrollWidth,
+            scrollHeight: el.scrollHeight,
+            clientWidth: el.clientWidth,
+            clientHeight: el.clientHeight,
         };
     }
     
@@ -631,7 +710,7 @@ DOM_WALKER_SCRIPT = """
 
 
 def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
-    """Convert raw DOM node data to Figma-compatible format."""
+    """Convert raw DOM node data to Figma-compatible format with extended properties."""
     tag_name = raw_node.get("tagName", "DIV")
     styles = raw_node.get("styles", {})
     bbox = raw_node.get("boundingBox", {})
@@ -683,6 +762,20 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
         }]
         normalized["strokeWeight"] = border_width
     
+    # Extract individual border sides (for divider/stroke line detection)
+    normalized["borderTopWidth"] = parse_pixel_value(styles.get("borderTopWidth", "0"))
+    normalized["borderTopStyle"] = styles.get("borderTopStyle", "none")
+    normalized["borderTopColor"] = styles.get("borderTopColor", "")
+    normalized["borderBottomWidth"] = parse_pixel_value(styles.get("borderBottomWidth", "0"))
+    normalized["borderBottomStyle"] = styles.get("borderBottomStyle", "none")
+    normalized["borderBottomColor"] = styles.get("borderBottomColor", "")
+    normalized["borderLeftWidth"] = parse_pixel_value(styles.get("borderLeftWidth", "0"))
+    normalized["borderLeftStyle"] = styles.get("borderLeftStyle", "none")
+    normalized["borderLeftColor"] = styles.get("borderLeftColor", "")
+    normalized["borderRightWidth"] = parse_pixel_value(styles.get("borderRightWidth", "0"))
+    normalized["borderRightStyle"] = styles.get("borderRightStyle", "none")
+    normalized["borderRightColor"] = styles.get("borderRightColor", "")
+    
     # Extract corner radius
     corner_radius = parse_pixel_value(styles.get("borderRadius", "0"))
     if corner_radius > 0:
@@ -698,6 +791,86 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
         if not all(r == corner_radius for r in radii):
             normalized["rectangleCornerRadii"] = radii
     
+    # Box Shadow (catches missing shadows in cards/action bars)
+    box_shadow = styles.get("boxShadow", "")
+    if box_shadow and box_shadow != "none":
+        normalized["boxShadow"] = box_shadow
+        normalized["effects"] = [{"type": "DROP_SHADOW", "raw": box_shadow}]
+    else:
+        normalized["boxShadow"] = "none"
+    
+    # Overflow properties (catches cropped vs truncated text)
+    normalized["overflow"] = styles.get("overflow", "visible")
+    normalized["overflowX"] = styles.get("overflowX", "visible")
+    normalized["overflowY"] = styles.get("overflowY", "visible")
+    normalized["textOverflow"] = styles.get("textOverflow", "clip")
+    normalized["whiteSpace"] = styles.get("whiteSpace", "normal")
+    
+    # Scrollbar detection
+    normalized["scrollWidth"] = styles.get("scrollWidth", 0)
+    normalized["scrollHeight"] = styles.get("scrollHeight", 0)
+    normalized["clientWidth"] = styles.get("clientWidth", 0)
+    normalized["clientHeight"] = styles.get("clientHeight", 0)
+    normalized["hasHorizontalScrollbar"] = styles.get("hasHorizontalScrollbar", False)
+    normalized["hasVerticalScrollbar"] = styles.get("hasVerticalScrollbar", False)
+    
+    # Opacity (catches disabled/active state differences)
+    opacity = float(styles.get("opacity", "1"))
+    normalized["opacity"] = opacity
+    
+    # Cursor (interactive element states)
+    normalized["cursor"] = styles.get("cursor", "auto")
+    
+    # Position and Z-Index (fixed positioning, layering)
+    normalized["position"] = styles.get("position", "static")
+    normalized["zIndex"] = styles.get("zIndex", "auto")
+    
+    # Transform (rotation, scale differences)
+    transform = styles.get("transform", "none")
+    if transform and transform != "none":
+        normalized["transform"] = transform
+    
+    # Visibility / Display
+    normalized["display"] = styles.get("display", "block")
+    normalized["visibility"] = styles.get("visibility", "visible")
+    
+    # Outline (focus ring detection)
+    outline = styles.get("outline", "")
+    if outline and outline != "none":
+        normalized["outline"] = outline
+    normalized["outlineWidth"] = parse_pixel_value(styles.get("outlineWidth", "0"))
+    normalized["outlineStyle"] = styles.get("outlineStyle", "none")
+    normalized["outlineColor"] = styles.get("outlineColor", "")
+    
+    # Min/Max Width/Height (dropdown width matching)
+    normalized["maxWidth"] = styles.get("maxWidth", "none")
+    normalized["minWidth"] = styles.get("minWidth", "auto")
+    normalized["maxHeight"] = styles.get("maxHeight", "none")
+    normalized["minHeight"] = styles.get("minHeight", "auto")
+    
+    # Background image (gradients, image fills)
+    bg_image = styles.get("backgroundImage", "none")
+    if bg_image and bg_image != "none":
+        normalized["backgroundImage"] = bg_image
+    
+    # Aspect ratio
+    aspect_ratio = styles.get("aspectRatio", "auto")
+    normalized["aspectRatio"] = aspect_ratio
+    computed_aspect = styles.get("computedAspectRatio")
+    if computed_aspect:
+        normalized["computedAspectRatio"] = round(computed_aspect, 4)
+    
+    # Gap properties
+    gap = parse_pixel_value(styles.get("gap", "0"))
+    row_gap = parse_pixel_value(styles.get("rowGap", "0"))
+    column_gap = parse_pixel_value(styles.get("columnGap", "0"))
+    if gap > 0:
+        normalized["gap"] = gap
+    if row_gap > 0:
+        normalized["rowGap"] = row_gap
+    if column_gap > 0:
+        normalized["columnGap"] = column_gap
+    
     # Type-specific properties
     if node_type == "TEXT":
         normalized["characters"] = text_content
@@ -710,6 +883,11 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
         normalized["textAlignHorizontal"] = map_text_align(styles.get("textAlign", "left"))
         normalized["letterSpacing"] = parse_pixel_value(styles.get("letterSpacing", "0"))
         normalized["lineHeightPx"] = parse_pixel_value(styles.get("lineHeight", "0"))
+        
+        # Text decoration (underlines, strikethrough)
+        text_decoration = styles.get("textDecoration", "none")
+        if text_decoration and text_decoration != "none":
+            normalized["textDecoration"] = text_decoration
         
         text_color = styles.get("color", "")
         if text_color:
@@ -733,8 +911,12 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
         if layout_mode:
             normalized["layoutMode"] = layout_mode
         
+        # Flex properties
+        normalized["flexDirection"] = styles.get("flexDirection", "row")
+        normalized["justifyContent"] = styles.get("justifyContent", "flex-start")
+        normalized["alignItems"] = styles.get("alignItems", "stretch")
+        
         # Gap / item spacing
-        gap = parse_pixel_value(styles.get("gap", "0"))
         if gap > 0:
             normalized["itemSpacing"] = gap
     
@@ -750,16 +932,6 @@ def normalize_dom_node(raw_node: dict) -> dict[str, Any]:
             normalized["imageUrl"] = raw_node["src"]
         if raw_node.get("alt"):
             normalized["altText"] = raw_node["alt"]
-    
-    # Add opacity if not fully opaque
-    opacity = float(styles.get("opacity", "1"))
-    if opacity < 1:
-        normalized["opacity"] = opacity
-    
-    # Add box shadow if present
-    box_shadow = styles.get("boxShadow", "")
-    if box_shadow and box_shadow != "none":
-        normalized["effects"] = [{"type": "DROP_SHADOW", "raw": box_shadow}]
     
     return normalized
 

@@ -31,6 +31,16 @@ from design_comparator import DesignComparator
 from gemini_refinement import GeminiRefinementLayer
 from annotate_differences import create_annotated_screenshot, build_annotations, build_figma_annotations, CATEGORY_COLORS
 
+# VQA Pipeline imports
+from PIL import Image
+import io
+from vqa import (
+    run_vqa_pipeline,
+    run_vqa_simple,
+    PipelineConfig,
+    VQAReport,
+)
+
 load_dotenv()
 
 # Configure logging to show Gemini refinement details
@@ -436,6 +446,30 @@ class CompareUrlsRequest(BaseModel):
                     "Sends screenshots + comparison JSON to Gemini for visual validation. "
                     "Uses GEMINI_API_KEY and GEMINI_MODEL from .env",
     )
+    
+    # ---- VQA Pipeline fields ----
+    use_vqa_pipeline: bool = Field(
+        False,
+        description="Enable the advanced VQA pipeline instead of basic comparison. "
+                    "Runs 5-stage analysis: pre-filters, parallel LLM passes, merge, refinement, prioritization. "
+                    "Returns a VQAReport with quality score. When True, use_gemini is ignored.",
+    )
+    vqa_enable_pass_a: bool = Field(
+        True,
+        description="VQA: Enable Pass A (blind visual analysis) - full screenshot comparison",
+    )
+    vqa_enable_pass_b: bool = Field(
+        True,
+        description="VQA: Enable Pass B (targeted validation) - cropped region analysis",
+    )
+    vqa_enable_pass_c: bool = Field(
+        False,
+        description="VQA: Enable Pass C (behavioral testing) - hover states, interactions",
+    )
+    vqa_enable_refinement: bool = Field(
+        True,
+        description="VQA: Enable refinement pass for uncertain findings",
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -462,7 +496,17 @@ class CompareUrlsRequest(BaseModel):
                     "wait_for_selector": "body",
                     "viewport": {"width": 1440, "height": 800},
                     "max_depth": 50,
-                    "use_gemini": True
+                    "use_gemini": True,
+                    "use_vqa_pipeline": False
+                },
+                {
+                    "figma_url": "https://www.figma.com/design/Cq7YpYswOrCTlR8QvKUqIb/VQA-engine?node-id=1-137455",
+                    "web_url": "https://qa-wms.dpworld.com/asn",
+                    "use_vqa_pipeline": True,
+                    "vqa_enable_pass_a": True,
+                    "vqa_enable_pass_b": True,
+                    "vqa_enable_pass_c": False,
+                    "vqa_enable_refinement": True
                 }
             ]
         }
@@ -956,16 +1000,25 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
     reducing total extraction time to the duration of the slower extraction rather
     than the sum of both.
 
-    Set **use_gemini=true** to enable the Gemini vision refinement layer.
-    When enabled, the API will:
-    1. Run the normal DOM-based comparison
-    2. Capture screenshots of both Figma and web
-    3. Send comparison JSON + both screenshots to Gemini
-    4. Gemini validates findings, removes false positives, and detects
-       visual issues the DOM comparator missed (icons, images, layout)
-    5. Return merged results with a `gemini_refinement` metadata block
+    **Two Comparison Modes:**
+    
+    1. **Basic Mode (default)**: Set `use_vqa_pipeline=false`
+       - DOM-based comparison with optional Gemini refinement
+       - Faster, lower cost
+       - Set `use_gemini=true` for visual validation
+    
+    2. **Advanced VQA Pipeline**: Set `use_vqa_pipeline=true`
+       - 5-stage analysis: pre-filters → parallel LLM passes → merge → refinement → report
+       - Includes pixel diff, SSIM, blind visual, targeted, and behavioral analysis
+       - Returns quality score and prioritized findings
+       - More thorough but higher cost
 
-    New Gemini-found issues are tagged with `"source": "gemini_visual"`.
+    **VQA Pipeline Stages:**
+    1. Algorithmic pre-filters (pixel diff, SSIM - zero LLM cost)
+    2. Parallel LLM analysis (Pass A: blind, Pass B: targeted, Pass C: behavioral)
+    3. Merge + deduplicate findings
+    4. Selective refinement (uncertain items only)
+    5. Prioritization + report generation with quality score
     """
     # --- Step 1: Parse Figma URL and prepare parameters ---
     try:
@@ -1050,7 +1103,68 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
         web_extracted["screenshot_id"] = web_ss_id
         web_extracted["screenshot_url"] = f"/api/extract/{web_ss_id}/image"
 
-    # --- Step 4: Run DOM-based comparison ---
+    # --- VQA Pipeline Mode ---
+    if request.use_vqa_pipeline:
+        logger.info("Running VQA Pipeline mode...")
+        
+        if not figma_screenshot_bytes or not web_screenshot_bytes:
+            raise HTTPException(
+                status_code=400, 
+                detail="VQA Pipeline requires both Figma and Web screenshots"
+            )
+        
+        try:
+            figma_img = Image.open(io.BytesIO(figma_screenshot_bytes))
+            web_img = Image.open(io.BytesIO(web_screenshot_bytes))
+            
+            vqa_config = PipelineConfig(
+                enable_pass_a=request.vqa_enable_pass_a,
+                enable_pass_b=request.vqa_enable_pass_b,
+                enable_pass_c=request.vqa_enable_pass_c,
+                enable_refinement=request.vqa_enable_refinement,
+            )
+            
+            comparator = DesignComparator(figma_extracted, web_extracted)
+            if request.tolerance:
+                comparator.tolerance.update(request.tolerance)
+            dom_comparison = comparator.compare_all()
+            
+            dom_diffs = []
+            for category, items in dom_comparison.get("by_category", {}).items():
+                if isinstance(items, list):
+                    for item in items:
+                        dom_diffs.append({
+                            "category": category,
+                            **item
+                        })
+            
+            vqa_report: VQAReport = await run_vqa_pipeline(
+                figma_data=figma_extracted,
+                web_data=web_extracted,
+                figma_screenshot=figma_img,
+                web_screenshot=web_img,
+                page_url=str(request.web_url),
+                config=vqa_config,
+                dom_diffs=dom_diffs,
+            )
+            
+            results = vqa_report.to_dict()
+            
+            results["figma_screenshot_id"] = figma_extracted.get("screenshot_id")
+            results["figma_screenshot_url"] = figma_extracted.get("screenshot_url")
+            results["web_screenshot_id"] = web_extracted.get("screenshot_id")
+            results["web_screenshot_url"] = web_extracted.get("screenshot_url")
+            
+            results["mode"] = "vqa_pipeline"
+            results["dom_comparison_summary"] = dom_comparison.get("summary", {})
+            
+            return results
+            
+        except Exception as e:
+            logger.exception("VQA Pipeline failed")
+            raise HTTPException(status_code=500, detail=f"VQA Pipeline failed: {str(e)}")
+
+    # --- Step 4: Run DOM-based comparison (Basic Mode) ---
     try:
         comparator = DesignComparator(figma_extracted, web_extracted)
         if request.tolerance:

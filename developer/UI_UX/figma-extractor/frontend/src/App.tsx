@@ -33,14 +33,46 @@ interface CategorySummary {
   other: number
 }
 
+interface QualityScore {
+  score: number
+  grade: string
+  interpretation?: string
+}
+
 interface ComparisonResult {
   by_category: ByCategory
   summary?: {
-    total_differences: number
+    total_differences?: number
+    total?: number
     categories?: CategorySummary
+    by_severity?: Record<string, number>
+    by_category?: Record<string, number>
   }
   web_screenshot_url?: string
   figma_screenshot_url?: string
+  mode?: string
+  quality_score?: QualityScore
+  pipeline_metadata?: {
+    total_time_ms?: number
+    pass_a_findings?: number
+    pass_b_findings?: number
+    refinement_count?: number
+  }
+  findings?: Array<{
+    serial_number?: number
+    element_name?: string
+    category?: string
+    severity?: string
+    confidence?: string
+    diff_type?: string
+    dom_evidence?: {
+      figma_value?: string | number
+      web_value?: string | number
+      delta?: string
+    }
+    web_position?: WebPosition
+    figma_position?: WebPosition
+  }>
 }
 
 interface FormData {
@@ -49,7 +81,6 @@ interface FormData {
   loginUrl: string
   username: string
   password: string
-  useGemini: boolean
 }
 
 interface Annotation {
@@ -157,8 +188,7 @@ function App() {
     webUrl: '',
     loginUrl: '',
     username: '',
-    password: '',
-    useGemini: false
+    password: ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -234,7 +264,11 @@ function App() {
       wait_for_selector: "body",
       viewport: { width: 1440, height: 800 },
       max_depth: 50,
-      use_gemini: formData.useGemini
+      use_vqa_pipeline: true,
+      vqa_enable_pass_a: true,
+      vqa_enable_pass_b: true,
+      vqa_enable_pass_c: false,
+      vqa_enable_refinement: true
     }
 
     try {
@@ -455,8 +489,22 @@ function App() {
   }
 
   const getTotalDifferences = (): number => {
+    if (result?.summary?.total) return result.summary.total
+    if (result?.findings) return result.findings.length
     if (!result?.by_category) return 0
     return Object.values(result.by_category).reduce((sum, items) => sum + items.length, 0)
+  }
+
+  const getQualityScoreColor = (score: number): string => {
+    if (score >= 85) return 'text-emerald-600'
+    if (score >= 70) return 'text-amber-500'
+    return 'text-red-500'
+  }
+
+  const getQualityScoreBgColor = (score: number): string => {
+    if (score >= 85) return 'bg-emerald-50 border-emerald-200'
+    if (score >= 70) return 'bg-amber-50 border-amber-200'
+    return 'bg-red-50 border-red-200'
   }
 
   const getCategoryConfig = (category: string) => {
@@ -567,29 +615,12 @@ function App() {
               </div>
             </div>
 
-            {/* Options */}
-            <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-              <h3 className="text-[0.8125rem] font-semibold mb-3 text-gray-700">Options</h3>
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="useGemini"
-                  name="useGemini"
-                  checked={formData.useGemini}
-                  onChange={handleInputChange}
-                  className="w-[18px] h-[18px] mt-0.5 cursor-pointer accent-blue-600"
-                />
-                <label htmlFor="useGemini" className="flex flex-col gap-1 font-medium text-gray-700 text-sm cursor-pointer">
-                  Use Gemini AI Refinement
-                  <span className="font-normal text-xs text-gray-500">
-                    Enable AI-powered visual validation to reduce false positives
-                  </span>
-                </label>
-              </div>
-            </div>
-
             {/* Actions */}
-            <div className="flex justify-end mt-4 pt-4 border-t border-gray-200 gap-3">
+            <div className="flex justify-end mt-4 pt-4 border-t border-gray-200 gap-3 items-center">
+              <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                VQA Pipeline enabled
+              </span>
               <button
                 onClick={handleCompare}
                 disabled={loading}
@@ -598,7 +629,7 @@ function App() {
                 {loading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 rounded-full border-t-white animate-spin" />
-                    Comparing...
+                    Running VQA Pipeline...
                   </>
                 ) : (
                   'Compare'
@@ -629,6 +660,68 @@ function App() {
             )}
           </div>
         </section>
+
+        {/* VQA Quality Score Section */}
+        {result?.mode === 'vqa_pipeline' && result?.quality_score && (
+          <section className="shrink-0 mb-6 animate-fadeIn">
+            <div className={`bg-white rounded-lg p-4 md:p-6 border shadow-sm ${getQualityScoreBgColor(result.quality_score.score)}`}>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full bg-white border-4 border-current shadow-inner" style={{ borderColor: result.quality_score.score >= 85 ? '#10b981' : result.quality_score.score >= 70 ? '#f59e0b' : '#ef4444' }}>
+                    <span className={`text-2xl font-bold ${getQualityScoreColor(result.quality_score.score)}`}>
+                      {Math.round(result.quality_score.score)}
+                    </span>
+                    <span className="text-xs text-gray-500">/ 100</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-800">
+                      Quality Score: <span className={getQualityScoreColor(result.quality_score.score)}>{result.quality_score.grade}</span>
+                    </h3>
+                    {result.quality_score.interpretation && (
+                      <p className="text-sm text-gray-600 mt-1">{result.quality_score.interpretation}</p>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Pipeline Stats */}
+                {result.pipeline_metadata && (
+                  <div className="flex gap-6 text-sm">
+                    {result.pipeline_metadata.total_time_ms && (
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-slate-700">
+                          {(result.pipeline_metadata.total_time_ms / 1000).toFixed(1)}s
+                        </div>
+                        <div className="text-xs text-gray-500">Total Time</div>
+                      </div>
+                    )}
+                    {result.summary?.by_severity && (
+                      <div className="flex gap-3">
+                        {result.summary.by_severity.critical > 0 && (
+                          <div className="text-center">
+                            <div className="text-lg font-semibold text-red-600">{result.summary.by_severity.critical}</div>
+                            <div className="text-xs text-gray-500">Critical</div>
+                          </div>
+                        )}
+                        {result.summary.by_severity.major > 0 && (
+                          <div className="text-center">
+                            <div className="text-lg font-semibold text-orange-500">{result.summary.by_severity.major}</div>
+                            <div className="text-xs text-gray-500">Major</div>
+                          </div>
+                        )}
+                        {result.summary.by_severity.minor > 0 && (
+                          <div className="text-center">
+                            <div className="text-lg font-semibold text-amber-500">{result.summary.by_severity.minor}</div>
+                            <div className="text-xs text-gray-500">Minor</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Annotated Image Section */}
         {(annotatedImage.baseImageUrl || annotatedImage.loading || annotatedImage.error) && (

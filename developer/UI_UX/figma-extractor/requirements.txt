@@ -6,4 +6,8 @@ fastapi>=0.104.1
 pydantic>=2.5.0
 playwright>=1.40.0
 google-generativeai
-pillow
+pillow>=10.0.0
+numpy>=1.24.0
+scikit-image>=0.21.0
+scipy>=1.10.0
+pytest>=7.4.0
