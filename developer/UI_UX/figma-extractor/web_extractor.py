@@ -6,11 +6,192 @@ Extracts visual/layout properties from rendered web pages using Playwright.
 Returns JSON structure matching the Figma extraction format.
 """
 
+import asyncio
+import logging
 import re
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from playwright.async_api import async_playwright, Page, Browser
+from playwright.async_api import async_playwright, Page, Browser, BrowserContext, Playwright
+
+logger = logging.getLogger(__name__)
+
+
+class BrowserPool:
+    """
+    Warm Playwright browser pool to avoid cold-start browser launch penalties.
+    
+    Instead of launching a new browser per request (~5s), this pool maintains
+    reusable browser instances. New requests get a fresh context (~200ms) from
+    an existing browser, dramatically reducing latency.
+    
+    Usage:
+        pool = BrowserPool(pool_size=3)
+        await pool.start()
+        
+        async with pool.acquire() as (browser, context):
+            page = await context.new_page()
+            # ... use page ...
+        
+        await pool.shutdown()
+    """
+    
+    def __init__(
+        self,
+        pool_size: int = 2,
+        headless: bool = False,
+        browser_type: str = "chromium",
+    ):
+        """
+        Initialize the browser pool.
+        
+        Args:
+            pool_size: Number of browser instances to maintain
+            headless: Run browsers in headless mode
+            browser_type: Browser engine ('chromium', 'firefox', 'webkit')
+        """
+        self._pool_size = pool_size
+        self._headless = headless
+        self._browser_type = browser_type
+        
+        self._playwright: Optional[Playwright] = None
+        self._browsers: list[Browser] = []
+        self._available: asyncio.Queue[Browser] = asyncio.Queue()
+        self._lock = asyncio.Lock()
+        self._started = False
+        self._shutting_down = False
+    
+    async def start(self) -> None:
+        """Start the browser pool and launch browser instances."""
+        async with self._lock:
+            if self._started:
+                return
+            
+            logger.info(f"Starting browser pool with {self._pool_size} {self._browser_type} instances...")
+            
+            self._playwright = await async_playwright().start()
+            browser_launcher = getattr(self._playwright, self._browser_type)
+            
+            for i in range(self._pool_size):
+                browser = await browser_launcher.launch(headless=self._headless)
+                self._browsers.append(browser)
+                await self._available.put(browser)
+                logger.debug(f"Browser {i + 1}/{self._pool_size} launched")
+            
+            self._started = True
+            logger.info(f"Browser pool started with {self._pool_size} warm instances")
+    
+    async def shutdown(self) -> None:
+        """Gracefully shutdown all browser instances."""
+        async with self._lock:
+            if not self._started or self._shutting_down:
+                return
+            
+            self._shutting_down = True
+            logger.info("Shutting down browser pool...")
+            
+            for browser in self._browsers:
+                try:
+                    await browser.close()
+                except Exception as e:
+                    logger.warning(f"Error closing browser: {e}")
+            
+            self._browsers.clear()
+            
+            if self._playwright:
+                await self._playwright.stop()
+                self._playwright = None
+            
+            self._started = False
+            self._shutting_down = False
+            logger.info("Browser pool shutdown complete")
+    
+    @asynccontextmanager
+    async def acquire(
+        self,
+        viewport: Optional[dict] = None,
+        device_scale_factor: float = 1,
+        timeout: float = 30.0,
+    ):
+        """
+        Acquire a browser and create a fresh context for use.
+        
+        Args:
+            viewport: Viewport dimensions {width, height}
+            device_scale_factor: Device pixel ratio
+            timeout: Max time to wait for available browser
+        
+        Yields:
+            Tuple of (Browser, BrowserContext)
+        
+        The context is automatically closed when the context manager exits,
+        and the browser is returned to the pool.
+        """
+        if not self._started:
+            raise RuntimeError("Browser pool not started. Call start() first.")
+        
+        browser: Optional[Browser] = None
+        context: Optional[BrowserContext] = None
+        
+        try:
+            browser = await asyncio.wait_for(
+                self._available.get(),
+                timeout=timeout
+            )
+            
+            context = await browser.new_context(
+                viewport=viewport or {"width": 1920, "height": 1080},
+                device_scale_factor=device_scale_factor,
+            )
+            
+            yield browser, context
+            
+        finally:
+            if context:
+                try:
+                    await context.close()
+                except Exception as e:
+                    logger.warning(f"Error closing context: {e}")
+            
+            if browser and not self._shutting_down:
+                await self._available.put(browser)
+    
+    @property
+    def is_started(self) -> bool:
+        """Check if the pool is started and ready."""
+        return self._started
+    
+    @property
+    def available_count(self) -> int:
+        """Number of browsers currently available in the pool."""
+        return self._available.qsize()
+    
+    async def health_check(self) -> dict:
+        """Return pool health status."""
+        return {
+            "started": self._started,
+            "pool_size": self._pool_size,
+            "available": self._available.qsize(),
+            "in_use": self._pool_size - self._available.qsize() if self._started else 0,
+            "browser_type": self._browser_type,
+            "headless": self._headless,
+        }
+
+
+# Global browser pool instance - initialized by FastAPI lifespan
+_browser_pool: Optional[BrowserPool] = None
+
+
+def get_browser_pool() -> Optional[BrowserPool]:
+    """Get the global browser pool instance."""
+    return _browser_pool
+
+
+def set_browser_pool(pool: Optional[BrowserPool]) -> None:
+    """Set the global browser pool instance."""
+    global _browser_pool
+    _browser_pool = pool
 
 
 def parse_color(color_str: str) -> dict[str, Any]:
@@ -816,6 +997,88 @@ async def wait_for_react_render(page: Page, timeout: int = 10000) -> None:
         pass
 
 
+async def _extract_with_page(
+    page: Page,
+    url: str,
+    credentials: Optional[dict] = None,
+    login_url: Optional[str] = None,
+    root_selector: Optional[str] = None,
+    max_depth: int = 50,
+    wait_for_selector: Optional[str] = None,
+    screenshot: bool = False,
+    post_login_steps: Optional[list[dict]] = None,
+) -> dict[str, Any]:
+    """Internal extraction logic using a provided page instance."""
+    import base64
+    
+    # Handle authentication if credentials provided
+    if credentials and credentials.get("username") and credentials.get("password"):
+        auth_url = login_url or url
+        await page.goto(auth_url, wait_until="domcontentloaded")
+        
+        login_success = await execute_login(
+            page,
+            credentials["username"],
+            credentials["password"],
+            credentials.get("selectors"),
+        )
+        
+        if not login_success:
+            raise Exception("Login failed - could not find login form elements")
+        
+        # Execute post-login steps (e.g., workspace selection)
+        if post_login_steps:
+            steps_success = await execute_post_login_steps(page, post_login_steps)
+            if not steps_success:
+                logger.warning("Some post-login steps may have failed")
+        
+        # Navigate to target if different from login
+        if login_url and login_url != url:
+            await page.goto(url, wait_until="domcontentloaded")
+    else:
+        await page.goto(url, wait_until="domcontentloaded")
+    
+    # Wait for React/SPA rendering
+    await wait_for_react_render(page)
+    
+    # Wait for specific selector if provided
+    if wait_for_selector:
+        await page.wait_for_selector(wait_for_selector, timeout=10000)
+    
+    # Execute DOM walker script
+    raw_data = await page.evaluate(
+        DOM_WALKER_SCRIPT,
+        {"maxDepth": max_depth, "rootSelector": root_selector},
+    )
+    
+    # Capture screenshot if requested
+    screenshot_base64 = None
+    if screenshot:
+        screenshot_bytes = await page.screenshot(full_page=True)
+        screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
+    
+    # Normalize nodes to Figma format
+    nodes = [normalize_dom_node(node) for node in raw_data.get("rawNodes", [])]
+    
+    # Filter out zero-size nodes
+    nodes = [n for n in nodes if n["width"] > 0 or n["height"] > 0]
+    
+    result = {
+        "source": "web",
+        "url": raw_data.get("url", url),
+        "title": raw_data.get("title", ""),
+        "viewport": raw_data.get("viewport", {}),
+        "extracted_at": datetime.now(timezone.utc).isoformat(),
+        "total_nodes_extracted": len(nodes),
+        "nodes": nodes,
+    }
+    
+    if screenshot_base64:
+        result["screenshot"] = screenshot_base64
+    
+    return result
+
+
 async def extract_from_url(
     url: str,
     credentials: Optional[dict] = None,
@@ -829,6 +1092,9 @@ async def extract_from_url(
 ) -> dict[str, Any]:
     """
     Extract visual properties from a web page.
+    
+    Uses the warm browser pool if available (~200ms context creation),
+    otherwise falls back to launching a new browser (~5s cold start).
     
     Args:
         url: Target URL to extract from
@@ -844,6 +1110,27 @@ async def extract_from_url(
     Returns:
         Figma-compatible JSON structure
     """
+    pool = get_browser_pool()
+    
+    # Use browser pool if available (warm start ~200ms)
+    if pool and pool.is_started:
+        logger.debug("Using browser pool for extraction")
+        async with pool.acquire(viewport=viewport or {"width": 1920, "height": 1080}) as (browser, context):
+            page = await context.new_page()
+            return await _extract_with_page(
+                page=page,
+                url=url,
+                credentials=credentials,
+                login_url=login_url,
+                root_selector=root_selector,
+                max_depth=max_depth,
+                wait_for_selector=wait_for_selector,
+                screenshot=screenshot,
+                post_login_steps=post_login_steps,
+            )
+    
+    # Fallback: launch new browser (cold start ~5s)
+    logger.debug("Browser pool not available, launching new browser")
     async with async_playwright() as p:
         browser: Browser = await p.chromium.launch(headless=False)
         
@@ -855,74 +1142,17 @@ async def extract_from_url(
         page = await context.new_page()
         
         try:
-            # Handle authentication if credentials provided
-            if credentials and credentials.get("username") and credentials.get("password"):
-                auth_url = login_url or url
-                await page.goto(auth_url, wait_until="domcontentloaded")
-                
-                login_success = await execute_login(
-                    page,
-                    credentials["username"],
-                    credentials["password"],
-                    credentials.get("selectors"),
-                )
-                
-                if not login_success:
-                    raise Exception("Login failed - could not find login form elements")
-                
-                # Execute post-login steps (e.g., workspace selection)
-                if post_login_steps:
-                    steps_success = await execute_post_login_steps(page, post_login_steps)
-                    if not steps_success:
-                        print("Warning: Some post-login steps may have failed")
-                
-                # Navigate to target if different from login
-                if login_url and login_url != url:
-                    await page.goto(url, wait_until="domcontentloaded")
-            else:
-                await page.goto(url, wait_until="domcontentloaded")
-            
-            # Wait for React/SPA rendering
-            await wait_for_react_render(page)
-            
-            # Wait for specific selector if provided
-            if wait_for_selector:
-                await page.wait_for_selector(wait_for_selector, timeout=10000)
-            
-            # Execute DOM walker script
-            raw_data = await page.evaluate(
-                DOM_WALKER_SCRIPT,
-                {"maxDepth": max_depth, "rootSelector": root_selector},
+            return await _extract_with_page(
+                page=page,
+                url=url,
+                credentials=credentials,
+                login_url=login_url,
+                root_selector=root_selector,
+                max_depth=max_depth,
+                wait_for_selector=wait_for_selector,
+                screenshot=screenshot,
+                post_login_steps=post_login_steps,
             )
-            
-            # Capture screenshot if requested
-            screenshot_base64 = None
-            if screenshot:
-                screenshot_bytes = await page.screenshot(full_page=True)
-                import base64
-                screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
-            
-            # Normalize nodes to Figma format
-            nodes = [normalize_dom_node(node) for node in raw_data.get("rawNodes", [])]
-            
-            # Filter out zero-size nodes
-            nodes = [n for n in nodes if n["width"] > 0 or n["height"] > 0]
-            
-            result = {
-                "source": "web",
-                "url": raw_data.get("url", url),
-                "title": raw_data.get("title", ""),
-                "viewport": raw_data.get("viewport", {}),
-                "extracted_at": datetime.now(timezone.utc).isoformat(),
-                "total_nodes_extracted": len(nodes),
-                "nodes": nodes,
-            }
-            
-            if screenshot_base64:
-                result["screenshot"] = screenshot_base64
-            
-            return result
-            
         finally:
             await browser.close()
 

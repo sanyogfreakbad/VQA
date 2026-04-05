@@ -6,10 +6,12 @@ REST API for extracting design data from Figma files and live web pages.
 Enables automated visual comparison between design and implementation.
 """
 
+import asyncio
 import os
 import re
 import hashlib
 import base64
+from contextlib import asynccontextmanager
 from typing import Optional
 from collections import OrderedDict
 from threading import Lock
@@ -24,7 +26,7 @@ from dotenv import load_dotenv
 import logging
 
 from figma_extractor import fetch_figma_file, extract_design_data, fetch_figma_image
-from web_extractor import extract_from_url
+from web_extractor import extract_from_url, BrowserPool, set_browser_pool, get_browser_pool
 from design_comparator import DesignComparator
 from gemini_refinement import GeminiRefinementLayer
 from annotate_differences import create_annotated_screenshot, build_annotations, build_figma_annotations, CATEGORY_COLORS
@@ -40,6 +42,38 @@ logging.basicConfig(
 logging.getLogger('gemini_refinement').setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    FastAPI lifespan context manager for startup/shutdown events.
+    
+    Initializes the warm browser pool on startup and gracefully shuts it down
+    when the application stops.
+    """
+    # Startup: Initialize browser pool
+    pool_size = int(os.getenv("BROWSER_POOL_SIZE", "2"))
+    headless = os.getenv("BROWSER_HEADLESS", "false").lower() == "true"
+    
+    pool = BrowserPool(pool_size=pool_size, headless=headless)
+    set_browser_pool(pool)
+    
+    try:
+        await pool.start()
+        logger.info(f"Browser pool started: {pool_size} warm instances (headless={headless})")
+    except Exception as e:
+        logger.error(f"Failed to start browser pool: {e}")
+        set_browser_pool(None)
+    
+    yield
+    
+    # Shutdown: Clean up browser pool
+    if pool and pool.is_started:
+        await pool.shutdown()
+        logger.info("Browser pool shutdown complete")
+    set_browser_pool(None)
+
 
 # Screenshot storage with LRU-like behavior (max 100 screenshots in memory)
 MAX_SCREENSHOT_CACHE = 100
@@ -178,13 +212,16 @@ Extract design values from Figma files and live web pages.
 - **Figma Extraction**: Extract design tokens from Figma files via REST API
 - **Web Extraction**: Extract visual properties from rendered web pages using Playwright
 - **Unified Schema**: Both sources return compatible JSON for visual comparison
+- **Concurrent Extraction**: Figma and Web extraction run in parallel for faster comparison
+- **Warm Browser Pool**: Reusable Playwright browser instances for ~25x faster context creation
 
 ## Use Cases
 - Automated design-to-implementation comparison
 - Visual regression testing
 - Design system auditing
 """,
-    version="2.0.0",
+    version="3.2.0",
+    lifespan=lifespan,
 )
 
 
@@ -541,12 +578,16 @@ def get_token(provided_token: Optional[str] = None) -> str:
 
 
 @app.get("/")
-def root():
-    """Health check endpoint."""
+async def root():
+    """Health check endpoint with browser pool status."""
+    pool = get_browser_pool()
+    pool_status = await pool.health_check() if pool else {"started": False}
+    
     return {
         "status": "ok",
         "message": "Design Extractor API is running",
-        "version": "3.1.0",
+        "version": "3.2.0",
+        "browser_pool": pool_status,
         "endpoints": {
             "figma_url": "POST /api/figma/extract (accepts full Figma URL)",
             "figma": "GET /extract/{file_key}",
@@ -832,10 +873,88 @@ async def get_screenshot_image(screenshot_id: str):
     )
 
 
+async def _extract_figma_async(
+    file_key: str,
+    figma_token: str,
+    node_id: Optional[str],
+    figma_url: str,
+) -> tuple[dict, Optional[bytes]]:
+    """
+    Async wrapper for Figma extraction (runs sync code in thread pool).
+    
+    Returns:
+        Tuple of (figma_extracted_data, screenshot_bytes_or_none)
+    """
+    def _extract_figma_sync():
+        figma_data = fetch_figma_file(file_key, figma_token, node_id)
+        figma_extracted = extract_design_data(figma_data, file_key, node_id)
+        figma_extracted["source"] = "figma"
+        figma_extracted["figma_url"] = figma_url
+        
+        # Get screenshot
+        target_node_id = node_id
+        if not target_node_id:
+            document = figma_data.get("document", {})
+            children = document.get("children", [])
+            if children:
+                target_node_id = children[0].get("id")
+        
+        screenshot_bytes = None
+        if target_node_id:
+            screenshot_bytes = fetch_figma_image(file_key, figma_token, target_node_id, scale=2)
+        
+        return figma_extracted, screenshot_bytes
+    
+    return await asyncio.to_thread(_extract_figma_sync)
+
+
+async def _extract_web_async(
+    web_url: str,
+    credentials: Optional[dict],
+    login_url: Optional[str],
+    root_selector: Optional[str],
+    max_depth: int,
+    viewport: Optional[dict],
+    wait_for_selector: Optional[str],
+    post_login_steps: Optional[list[dict]],
+) -> tuple[dict, Optional[bytes]]:
+    """
+    Async web extraction wrapper.
+    
+    Returns:
+        Tuple of (web_extracted_data, screenshot_bytes_or_none)
+    """
+    web_extracted = await extract_from_url(
+        url=web_url,
+        credentials=credentials,
+        login_url=login_url,
+        root_selector=root_selector,
+        max_depth=max_depth,
+        viewport=viewport,
+        wait_for_selector=wait_for_selector,
+        screenshot=True,
+        post_login_steps=post_login_steps,
+    )
+    web_extracted["source"] = "web"
+    web_extracted["web_url"] = web_url
+    
+    # Extract screenshot bytes
+    screenshot_bytes = None
+    if web_extracted.get("screenshot"):
+        screenshot_bytes = base64.b64decode(web_extracted["screenshot"])
+        del web_extracted["screenshot"]
+    
+    return web_extracted, screenshot_bytes
+
+
 @app.post("/api/compare/urls")
 async def compare_figma_web_urls(request: CompareUrlsRequest):
     """
     Compare Figma design with web implementation using URLs.
+    
+    **Performance**: Figma and Web extraction run concurrently using asyncio.gather(),
+    reducing total extraction time to the duration of the slower extraction rather
+    than the sum of both.
 
     Set **use_gemini=true** to enable the Gemini vision refinement layer.
     When enabled, the API will:
@@ -848,7 +967,7 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
 
     New Gemini-found issues are tagged with `"source": "gemini_visual"`.
     """
-    # --- Step 1: Parse Figma URL ---
+    # --- Step 1: Parse Figma URL and prepare parameters ---
     try:
         parsed = parse_figma_url(request.figma_url)
         file_key = parsed["file_key"]
@@ -857,79 +976,79 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     figma_token = get_token(request.figma_token)
+    
+    # Prepare web extraction parameters
+    credentials_dict = None
+    if request.credentials:
+        credentials_dict = {
+            "username": request.credentials.username,
+            "password": request.credentials.password,
+            "selectors": request.credentials.selectors,
+        }
 
-    # --- Step 2: Extract Figma data + screenshot ---
-    figma_screenshot_bytes = None
+    post_login_steps = None
+    if request.post_login_steps:
+        post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
+
+    # --- Step 2: Run Figma and Web extraction CONCURRENTLY ---
+    logger.info("Starting concurrent Figma + Web extraction...")
+    
+    figma_task = _extract_figma_async(
+        file_key=file_key,
+        figma_token=figma_token,
+        node_id=node_id,
+        figma_url=request.figma_url,
+    )
+    
+    web_task = _extract_web_async(
+        web_url=str(request.web_url),
+        credentials=credentials_dict,
+        login_url=str(request.login_url) if request.login_url else None,
+        root_selector=request.root_selector,
+        max_depth=request.max_depth,
+        viewport=request.viewport,
+        wait_for_selector=request.wait_for_selector,
+        post_login_steps=post_login_steps,
+    )
+    
+    # Gather results - both run in parallel
     try:
-        figma_data = fetch_figma_file(file_key, figma_token, node_id)
-        figma_extracted = extract_design_data(figma_data, file_key, node_id)
-        figma_extracted["source"] = "figma"
-        figma_extracted["figma_url"] = request.figma_url
-
-        # Always capture Figma screenshot when Gemini is enabled
-        target_node_id = node_id
-        if not target_node_id:
-            document = figma_data.get("document", {})
-            children = document.get("children", [])
-            if children:
-                target_node_id = children[0].get("id")
-
-        if target_node_id:
-            figma_screenshot_bytes = fetch_figma_image(
-                file_key, figma_token, target_node_id, scale=2
-            )
-            if figma_screenshot_bytes:
-                figma_ss_id = store_screenshot(figma_screenshot_bytes)
-                figma_extracted["screenshot_id"] = figma_ss_id
-                figma_extracted["screenshot_url"] = f"/api/extract/{figma_ss_id}/image"
-
-    except SystemExit as e:
-        raise HTTPException(status_code=400, detail=f"Figma extraction failed: {str(e)}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Figma extraction failed: {str(e)}")
-
-    # --- Step 3: Extract web data + screenshot ---
-    web_screenshot_bytes = None
-    try:
-        credentials_dict = None
-        if request.credentials:
-            credentials_dict = {
-                "username": request.credentials.username,
-                "password": request.credentials.password,
-                "selectors": request.credentials.selectors,
-            }
-
-        post_login_steps = None
-        if request.post_login_steps:
-            post_login_steps = [step.model_dump(exclude_none=True) for step in request.post_login_steps]
-
-        # Always capture web screenshot for response
-        capture_web_screenshot = True
-
-        web_extracted = await extract_from_url(
-            url=str(request.web_url),
-            credentials=credentials_dict,
-            login_url=str(request.login_url) if request.login_url else None,
-            root_selector=request.root_selector,
-            max_depth=request.max_depth,
-            viewport=request.viewport,
-            wait_for_selector=request.wait_for_selector,
-            screenshot=capture_web_screenshot,
-            post_login_steps=post_login_steps,
+        results = await asyncio.gather(
+            figma_task,
+            web_task,
+            return_exceptions=True,
         )
-        web_extracted["source"] = "web"
-        web_extracted["web_url"] = str(request.web_url)
-
-        # Store web screenshot if captured
-        if web_extracted.get("screenshot"):
-            web_screenshot_bytes = base64.b64decode(web_extracted["screenshot"])
-            web_ss_id = store_screenshot(web_screenshot_bytes)
-            web_extracted["screenshot_id"] = web_ss_id
-            web_extracted["screenshot_url"] = f"/api/extract/{web_ss_id}/image"
-            del web_extracted["screenshot"]
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Web extraction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+    
+    # Check for exceptions in results
+    figma_result, web_result = results
+    
+    if isinstance(figma_result, Exception):
+        error_msg = str(figma_result)
+        if isinstance(figma_result, SystemExit):
+            raise HTTPException(status_code=400, detail=f"Figma extraction failed: {error_msg}")
+        raise HTTPException(status_code=500, detail=f"Figma extraction failed: {error_msg}")
+    
+    if isinstance(web_result, Exception):
+        raise HTTPException(status_code=500, detail=f"Web extraction failed: {str(web_result)}")
+    
+    # Unpack results
+    figma_extracted, figma_screenshot_bytes = figma_result
+    web_extracted, web_screenshot_bytes = web_result
+    
+    logger.info("Concurrent extraction complete")
+    
+    # Store screenshots
+    if figma_screenshot_bytes:
+        figma_ss_id = store_screenshot(figma_screenshot_bytes)
+        figma_extracted["screenshot_id"] = figma_ss_id
+        figma_extracted["screenshot_url"] = f"/api/extract/{figma_ss_id}/image"
+    
+    if web_screenshot_bytes:
+        web_ss_id = store_screenshot(web_screenshot_bytes)
+        web_extracted["screenshot_id"] = web_ss_id
+        web_extracted["screenshot_url"] = f"/api/extract/{web_ss_id}/image"
 
     # --- Step 4: Run DOM-based comparison ---
     try:
