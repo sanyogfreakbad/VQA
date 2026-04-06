@@ -56,6 +56,14 @@ from .image_utils import (
     ImageSizeConfig,
 )
 
+from .local_diff import (
+    LocalDiffEngine,
+    get_local_diff_engine,
+    DiffCategory,
+    DiffClassification,
+    RegionDiff,
+)
+
 __all__ = [
     # Pixel diff
     "compute_pixel_diff",
@@ -97,4 +105,10 @@ __all__ = [
     "crop_to_content",
     "add_border",
     "ImageSizeConfig",
+    # Local diff engine
+    "LocalDiffEngine",
+    "get_local_diff_engine",
+    "DiffCategory",
+    "DiffClassification",
+    "RegionDiff",
 ]

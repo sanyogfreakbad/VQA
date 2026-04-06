@@ -10,7 +10,7 @@ class LLMConfig:
     """Configuration for Gemini LLM calls."""
     
     # Model settings
-    model: str = "gemini-2.0-flash"
+    model: str = "gemini-2.5-flash"
     temperature: float = 0.2
     max_output_tokens: int = 4096
     

@@ -42,6 +42,9 @@ from ..vision import (
     crop_regions,
     PixelDiffResult,
     SSIMResult,
+    LocalDiffEngine,
+    get_local_diff_engine,
+    DiffCategory,
 )
 
 from ..llm import (
@@ -64,14 +67,26 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PipelineConfig:
-    """Configuration for the VQA pipeline."""
+    """Configuration for the VQA pipeline.
+    
+    Pass A (blind visual analysis) is disabled by default and only runs as a
+    fallback when the overall SSIM score is very low (below pass_a_fallback_threshold).
+    This significantly reduces latency and LLM costs for most comparisons.
+    
+    Set enable_pass_a=True to always run Pass A regardless of SSIM score.
+    """
     thresholds: Thresholds = field(default_factory=Thresholds)
     llm_config: LLMConfig = field(default_factory=LLMConfig)
     
-    enable_pass_a: bool = True
+    # Pass A is now disabled by default - runs only as fallback for very low SSIM
+    enable_pass_a: bool = False
+    enable_pass_a_fallback: bool = True  # Run Pass A if SSIM < threshold
     enable_pass_b: bool = True
     enable_pass_c: bool = False
     enable_refinement: bool = True
+    
+    # Local diff engine (Phase 3) - reduces LLM dependency
+    enable_local_diff: bool = True
     
     max_refinement_items: int = 20
     min_confidence_for_report: Confidence = Confidence.LOW
@@ -94,12 +109,22 @@ class PipelineMetadata:
     regions_skipped: int = 0
     regions_analyzed: int = 0
     
+    # Pass execution tracking
+    pass_a_enabled: bool = False
+    pass_a_fallback_triggered: bool = False
     pass_a_findings: int = 0
     pass_b_findings: int = 0
     pass_c_findings: int = 0
     
+    # Local diff tracking (Phase 3)
+    local_diff_enabled: bool = False
+    local_diff_findings: int = 0
+    llm_calls_saved: int = 0
+    
     refinement_count: int = 0
     final_findings: int = 0
+    
+    overall_ssim: Optional[float] = None
     
     errors: List[str] = field(default_factory=list)
     
@@ -110,11 +135,17 @@ class PipelineMetadata:
             "total_regions": self.total_regions,
             "regions_skipped": self.regions_skipped,
             "regions_analyzed": self.regions_analyzed,
+            "pass_a_enabled": self.pass_a_enabled,
+            "pass_a_fallback_triggered": self.pass_a_fallback_triggered,
             "pass_a_findings": self.pass_a_findings,
             "pass_b_findings": self.pass_b_findings,
             "pass_c_findings": self.pass_c_findings,
+            "local_diff_enabled": self.local_diff_enabled,
+            "local_diff_findings": self.local_diff_findings,
+            "llm_calls_saved": self.llm_calls_saved,
             "refinement_count": self.refinement_count,
             "final_findings": self.final_findings,
+            "overall_ssim": round(self.overall_ssim, 4) if self.overall_ssim else None,
             "errors": self.errors,
         }
 
@@ -218,6 +249,41 @@ async def run_vqa_pipeline(
                 f"{len(triage_result.suspect_regions)} suspect, "
                 f"{len(triage_result.dirty_regions)} dirty")
     
+    # =========================================================================
+    # STAGE 1.5: LOCAL DIFF ENGINE (optional - reduces LLM calls)
+    # =========================================================================
+    
+    local_diff_findings: List[Finding] = []
+    regions_for_llm = triage_result.regions_to_analyze
+    
+    if config.enable_local_diff and regions_for_llm:
+        logger.info("=" * 60)
+        logger.info("STAGE 1.5: LOCAL DIFF CLASSIFICATION")
+        logger.info("=" * 60)
+        
+        stage15_start = time.time()
+        metadata.local_diff_enabled = True
+        
+        try:
+            local_diff_findings, regions_for_llm = await _run_local_diff(
+                figma_screenshot=figma_screenshot,
+                web_screenshot=web_screenshot,
+                regions=regions_for_llm,
+                confidence_threshold=config.thresholds.local_diff_confidence_threshold,
+            )
+            
+            metadata.local_diff_findings = len(local_diff_findings)
+            metadata.llm_calls_saved = len(triage_result.regions_to_analyze) - len(regions_for_llm)
+            
+            logger.info(f"Local diff: {len(local_diff_findings)} high-confidence classifications, "
+                       f"{len(regions_for_llm)} regions need LLM validation")
+            
+        except Exception as e:
+            logger.warning(f"Local diff failed, falling back to full LLM analysis: {e}")
+            metadata.errors.append(f"local_diff: {str(e)}")
+        
+        metadata.stage_times_ms["stage15_local_diff"] = (time.time() - stage15_start) * 1000
+    
     logger.info("=" * 60)
     logger.info("STAGE 2: PARALLEL LLM ANALYSIS")
     logger.info("=" * 60)
@@ -230,17 +296,36 @@ async def run_vqa_pipeline(
     
     tasks = []
     
-    if config.enable_pass_a and gemini_client:
+    # Track SSIM in metadata
+    if ssim_result:
+        metadata.overall_ssim = ssim_result.overall_ssim
+    
+    # Determine if Pass A should run:
+    # - Always run if enable_pass_a is True
+    # - Run as fallback if enable_pass_a_fallback is True AND SSIM is very low
+    should_run_pass_a = config.enable_pass_a
+    metadata.pass_a_enabled = config.enable_pass_a
+    
+    if not should_run_pass_a and config.enable_pass_a_fallback and ssim_result:
+        if ssim_result.overall_ssim < config.thresholds.pass_a_fallback_threshold:
+            should_run_pass_a = True
+            metadata.pass_a_fallback_triggered = True
+            logger.info(f"Pass A fallback triggered: SSIM {ssim_result.overall_ssim:.4f} < "
+                       f"threshold {config.thresholds.pass_a_fallback_threshold}")
+    
+    if should_run_pass_a and gemini_client:
         logger.info("Starting Pass A: Blind visual analysis...")
         tasks.append(("pass_a", _run_pass_a(
             gemini_client, figma_screenshot, web_screenshot, page_width, page_height
         )))
     
-    if config.enable_pass_b and gemini_client and triage_result.regions_to_analyze:
-        logger.info("Starting Pass B: Targeted validation...")
+    if config.enable_pass_b and gemini_client and regions_for_llm:
+        logger.info(f"Starting Pass B: Targeted validation ({len(regions_for_llm)} regions, "
+                   f"batch_size={config.thresholds.pass_b_batch_size})...")
         tasks.append(("pass_b", _run_pass_b(
             gemini_client, figma_screenshot, web_screenshot,
-            triage_result.regions_to_analyze, dom_diffs or [], calibration_store
+            regions_for_llm, dom_diffs or [], calibration_store,
+            batch_size=config.thresholds.pass_b_batch_size
         )))
     
     if config.enable_pass_c and gemini_client and playwright_page:
@@ -271,6 +356,8 @@ async def run_vqa_pipeline(
     metadata.stage_times_ms["stage2_llm_analysis"] = (time.time() - stage2_start) * 1000
     
     logger.info(f"Pass A: {len(pass_a_findings)}, Pass B: {len(pass_b_findings)}, Pass C: {len(pass_c_findings)}")
+    if local_diff_findings:
+        logger.info(f"Local Diff: {len(local_diff_findings)} (high-confidence, no LLM)")
     
     logger.info("=" * 60)
     logger.info("STAGE 3: MERGE + DEDUPLICATE")
@@ -278,9 +365,12 @@ async def run_vqa_pipeline(
     
     stage3_start = time.time()
     
+    # Combine local diff findings with LLM findings
+    all_pass_b_findings = pass_b_findings + local_diff_findings
+    
     merge_result = merge_findings(
         pass_a_findings=pass_a_findings,
-        pass_b_findings=pass_b_findings,
+        pass_b_findings=all_pass_b_findings,
         pass_c_findings=pass_c_findings,
         dom_diffs=dom_diffs,
         iou_threshold=config.thresholds.iou_merge_threshold,
@@ -399,6 +489,7 @@ async def _run_pass_b(
     regions: List[Region],
     dom_diffs: List[Dict[str, Any]],
     calibration_store: CalibrationStore,
+    batch_size: int = 10,
 ) -> List[Finding]:
     """Run Pass B: Targeted validation."""
     try:
@@ -416,6 +507,7 @@ async def _run_pass_b(
             crop_pairs=crop_pairs,
             dom_diffs=dom_diffs,
             calibration_store=calibration_store,
+            batch_size=batch_size,
         )
         return findings
     except Exception as e:
@@ -439,6 +531,116 @@ async def _run_pass_c(
     except Exception as e:
         logger.error(f"Pass C error: {e}")
         return []
+
+
+async def _run_local_diff(
+    figma_screenshot: Image.Image,
+    web_screenshot: Image.Image,
+    regions: List[Region],
+    confidence_threshold: float = 0.8,
+) -> tuple[List[Finding], List[Region]]:
+    """Run local diff classification on regions.
+    
+    Uses CLIP + perceptual hashing to classify visual differences locally.
+    High-confidence classifications are returned as findings.
+    Low-confidence regions are returned for LLM validation.
+    
+    Args:
+        figma_screenshot: Full Figma screenshot
+        web_screenshot: Full web screenshot
+        regions: Regions to analyze
+        confidence_threshold: Minimum confidence to skip LLM
+    
+    Returns:
+        Tuple of (high_confidence_findings, regions_needing_llm)
+    """
+    import uuid
+    from ..models.enums import Category, Severity, Confidence as ConfidenceEnum
+    from ..models.region import BoundingBox
+    
+    engine = get_local_diff_engine(load_clip=True)
+    
+    high_confidence_findings = []
+    regions_for_llm = []
+    
+    # Crop and classify each region
+    for region in regions:
+        try:
+            # Crop the region from both screenshots
+            box = (region.x, region.y, region.x + region.width, region.y + region.height)
+            
+            # Ensure box is within bounds
+            box = (
+                max(0, box[0]),
+                max(0, box[1]),
+                min(figma_screenshot.width, box[2]),
+                min(web_screenshot.width, box[2]),
+            )
+            box = (
+                box[0],
+                box[1],
+                box[2],
+                min(figma_screenshot.height, min(web_screenshot.height, region.y + region.height)),
+            )
+            
+            if box[2] <= box[0] or box[3] <= box[1]:
+                regions_for_llm.append(region)
+                continue
+            
+            figma_crop = figma_screenshot.crop(box)
+            web_crop = web_screenshot.crop(box)
+            
+            # Classify the difference
+            classification = engine.classify_diff(figma_crop, web_crop)
+            
+            if classification.category == DiffCategory.IDENTICAL:
+                # Skip identical regions
+                continue
+            
+            if classification.is_high_confidence and classification.confidence >= confidence_threshold:
+                # Create a Finding from the local classification
+                finding = Finding(
+                    id=f"local_{uuid.uuid4().hex[:8]}",
+                    category=_map_diff_category_to_category(classification.category),
+                    severity=Severity.MEDIUM,
+                    confidence=ConfidenceEnum.HIGH if classification.confidence > 0.9 else ConfidenceEnum.MEDIUM,
+                    description=classification.description,
+                    bounding_box=BoundingBox(
+                        x=region.x,
+                        y=region.y,
+                        width=region.width,
+                        height=region.height,
+                    ),
+                    source="local_diff",
+                    pass_name="local_diff",
+                )
+                high_confidence_findings.append(finding)
+            else:
+                # Low confidence - needs LLM validation
+                regions_for_llm.append(region)
+                
+        except Exception as e:
+            logger.warning(f"Local diff failed for region: {e}")
+            regions_for_llm.append(region)
+    
+    return high_confidence_findings, regions_for_llm
+
+
+def _map_diff_category_to_category(diff_cat: DiffCategory) -> 'Category':
+    """Map LocalDiff category to Finding category."""
+    from ..models.enums import Category
+    
+    mapping = {
+        DiffCategory.TEXT: Category.TEXT,
+        DiffCategory.COLOR: Category.COLOR,
+        DiffCategory.SPACING: Category.SPACING,
+        DiffCategory.SHADOW: Category.SHADOW,
+        DiffCategory.BORDER: Category.BORDER,
+        DiffCategory.SIZE: Category.SIZE,
+        DiffCategory.MISSING: Category.MISSING,
+        DiffCategory.UNKNOWN: Category.OTHER,
+    }
+    return mapping.get(diff_cat, Category.OTHER)
 
 
 async def run_vqa_simple(

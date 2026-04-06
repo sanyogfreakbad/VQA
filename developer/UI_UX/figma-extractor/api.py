@@ -12,7 +12,7 @@ import re
 import hashlib
 import base64
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Optional, List
 from collections import OrderedDict
 from threading import Lock
 from urllib.parse import urlparse, parse_qs
@@ -40,6 +40,9 @@ from vqa import (
     PipelineConfig,
     VQAReport,
 )
+
+# Storage/caching imports
+from vqa.storage import ComparisonCache, get_cache, get_database
 
 load_dotenv()
 
@@ -469,6 +472,16 @@ class CompareUrlsRequest(BaseModel):
     vqa_enable_refinement: bool = Field(
         True,
         description="VQA: Enable refinement pass for uncertain findings",
+    )
+    
+    # ---- Cache control fields ----
+    use_cache: bool = Field(
+        True,
+        description="Enable result caching. Repeated identical requests return cached results.",
+    )
+    bypass_cache: bool = Field(
+        False,
+        description="Bypass cache for this request (force fresh comparison). Results will still be cached.",
     )
 
     model_config = {
@@ -1028,6 +1041,18 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+    # --- Cache check (before extraction) ---
+    cache = get_cache()
+    if request.use_cache and not request.bypass_cache:
+        cached_result = cache.get(
+            figma_url=request.figma_url,
+            web_url=str(request.web_url),
+            node_id=node_id,
+        )
+        if cached_result:
+            logger.info(f"Cache hit for {request.figma_url} vs {request.web_url}")
+            return cached_result
+
     figma_token = get_token(request.figma_token)
     
     # Prepare web extraction parameters
@@ -1158,6 +1183,17 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
             results["mode"] = "vqa_pipeline"
             results["dom_comparison_summary"] = dom_comparison.get("summary", {})
             
+            # Store in cache
+            if request.use_cache:
+                comparison_id = cache.store(
+                    figma_url=request.figma_url,
+                    web_url=str(request.web_url),
+                    results=results,
+                    node_id=node_id,
+                )
+                if comparison_id:
+                    results["_comparison_id"] = comparison_id
+            
             return results
             
         except Exception as e:
@@ -1214,6 +1250,18 @@ async def compare_figma_web_urls(request: CompareUrlsRequest):
                 "note": "DOM-based comparison results are still valid above.",
             }
 
+    # Store in cache (basic mode)
+    if request.use_cache:
+        comparison_id = cache.store(
+            figma_url=request.figma_url,
+            web_url=str(request.web_url),
+            results=results,
+            node_id=node_id,
+        )
+        if comparison_id:
+            results["_comparison_id"] = comparison_id
+    
+    results["mode"] = "basic"
     return results
 
 
@@ -1473,6 +1521,483 @@ async def get_figma_annotation_metadata(request: FigmaAnnotationMetadataRequest)
             status_code=500,
             detail=f"Failed to build Figma annotation metadata: {str(e)}"
         )
+
+
+# ============================================================================
+# Multi-State Comparison Endpoints (Phase 5)
+# ============================================================================
+
+class MultiStateCompareRequest(BaseModel):
+    """Request body for multi-state comparison."""
+    figma_url: str = Field(
+        ...,
+        description="Full Figma URL",
+    )
+    web_url: HttpUrl = Field(
+        ...,
+        description="Target web URL",
+    )
+    login_url: Optional[HttpUrl] = Field(
+        None,
+        description="Login URL if authentication required",
+    )
+    credentials: Optional[Credentials] = Field(
+        None,
+        description="Login credentials",
+    )
+    
+    # State capture options
+    capture_hover: bool = Field(
+        True,
+        description="Capture hover states for interactive elements",
+    )
+    capture_focus: bool = Field(
+        False,
+        description="Capture focus states (for form elements)",
+    )
+    hover_selectors: Optional[List[str]] = Field(
+        None,
+        description="Specific CSS selectors to hover (default: all interactive elements)",
+    )
+    max_hover_states: int = Field(
+        10,
+        ge=1,
+        le=50,
+        description="Maximum number of hover states to capture",
+    )
+    
+    # Breakpoint options
+    breakpoints: Optional[List[int]] = Field(
+        None,
+        description="Viewport widths for responsive testing (e.g., [1920, 1280, 768, 375])",
+    )
+    
+    figma_token: Optional[str] = Field(
+        None,
+        description="Figma API token",
+    )
+
+
+@app.post("/api/compare/states")
+async def compare_multi_state(request: MultiStateCompareRequest):
+    """Compare Figma design with web implementation across multiple states.
+    
+    This endpoint captures the web page in various interaction states
+    (hover, focus) and at different viewport sizes (responsive breakpoints).
+    
+    **Use cases:**
+    - Verify hover effects match design
+    - Test focus states for accessibility
+    - Validate responsive layouts at different breakpoints
+    
+    **Returns:**
+    - Default state comparison
+    - Hover state screenshots (if enabled)
+    - Breakpoint screenshots (if specified)
+    """
+    from vqa.extraction import StateCapture
+    
+    # Parse Figma URL
+    try:
+        parsed = parse_figma_url(request.figma_url)
+        file_key = parsed["file_key"]
+        node_id = parsed["node_id"]
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    figma_token = get_token(request.figma_token)
+    
+    # Prepare credentials
+    credentials_dict = None
+    if request.credentials:
+        credentials_dict = {
+            "username": request.credentials.username,
+            "password": request.credentials.password,
+            "selectors": request.credentials.selectors,
+        }
+    
+    # Extract Figma data
+    logger.info("Extracting Figma design...")
+    try:
+        figma_data = fetch_figma_file(file_key, figma_token, node_id)
+        figma_design = extract_design_data(figma_data, node_id)
+        figma_screenshot_bytes = fetch_figma_image(file_key, figma_token, node_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Figma extraction failed: {str(e)}")
+    
+    # Store Figma screenshot
+    figma_ss_id = store_screenshot(figma_screenshot_bytes)
+    
+    # Extract web data with multi-state capture
+    logger.info("Extracting web page with multi-state capture...")
+    
+    pool = get_browser_pool()
+    if not pool:
+        raise HTTPException(status_code=500, detail="Browser pool not available")
+    
+    async with pool.acquire() as page:
+        # Navigate and login if needed
+        login_url_str = str(request.login_url) if request.login_url else str(request.web_url)
+        await page.goto(login_url_str)
+        await page.wait_for_load_state("networkidle")
+        
+        # Handle login if credentials provided
+        if credentials_dict:
+            try:
+                await page.fill(credentials_dict["selectors"]["username"], credentials_dict["username"])
+                await page.fill(credentials_dict["selectors"]["password"], credentials_dict["password"])
+                await page.click(credentials_dict["selectors"]["submit"])
+                await page.wait_for_load_state("networkidle")
+            except Exception as e:
+                logger.warning(f"Login failed: {e}")
+        
+        # Navigate to target URL if different from login
+        if request.login_url and str(request.web_url) != login_url_str:
+            await page.goto(str(request.web_url))
+            await page.wait_for_load_state("networkidle")
+        
+        # Initialize state capture
+        capture = StateCapture(page)
+        
+        result = {
+            "figma_url": request.figma_url,
+            "web_url": str(request.web_url),
+            "figma_screenshot_id": figma_ss_id,
+            "figma_screenshot_url": f"/api/extract/{figma_ss_id}/image",
+            "states": {},
+        }
+        
+        # Capture default state
+        default_state = await capture.capture_default_state()
+        default_ss_id = store_screenshot(default_state.to_bytes())
+        result["states"]["default"] = {
+            "screenshot_id": default_ss_id,
+            "screenshot_url": f"/api/extract/{default_ss_id}/image",
+            "viewport": {
+                "width": default_state.viewport_width,
+                "height": default_state.viewport_height,
+            },
+        }
+        
+        # Capture hover states
+        if request.capture_hover:
+            logger.info(f"Capturing up to {request.max_hover_states} hover states...")
+            hover_states = await capture.capture_all_hover_states(
+                selectors=request.hover_selectors,
+                max_elements=request.max_hover_states,
+            )
+            
+            result["states"]["hover"] = []
+            for state in hover_states:
+                ss_id = store_screenshot(state.to_bytes())
+                result["states"]["hover"].append({
+                    "name": state.name,
+                    "selector": state.selector,
+                    "screenshot_id": ss_id,
+                    "screenshot_url": f"/api/extract/{ss_id}/image",
+                    "metadata": state.metadata,
+                })
+        
+        # Capture breakpoints
+        if request.breakpoints:
+            logger.info(f"Capturing {len(request.breakpoints)} breakpoints...")
+            breakpoint_states = await capture.capture_breakpoints(
+                breakpoints=request.breakpoints,
+                url=str(request.web_url),
+            )
+            
+            result["states"]["breakpoints"] = {}
+            for width, state in breakpoint_states.items():
+                ss_id = store_screenshot(state.to_bytes())
+                result["states"]["breakpoints"][width] = {
+                    "screenshot_id": ss_id,
+                    "screenshot_url": f"/api/extract/{ss_id}/image",
+                    "viewport": {
+                        "width": state.viewport_width,
+                        "height": state.viewport_height,
+                    },
+                }
+    
+    # Summary
+    result["summary"] = {
+        "total_states_captured": (
+            1 +  # default
+            len(result["states"].get("hover", [])) +
+            len(result["states"].get("breakpoints", {}))
+        ),
+        "hover_states": len(result["states"].get("hover", [])),
+        "breakpoints": len(result["states"].get("breakpoints", {})),
+    }
+    
+    logger.info(f"Multi-state capture complete: {result['summary']}")
+    
+    return result
+
+
+# ============================================================================
+# Feedback Endpoints (Phase 4)
+# ============================================================================
+
+class FeedbackRequest(BaseModel):
+    """Request body for submitting feedback on a finding."""
+    comparison_id: str = Field(
+        ...,
+        description="ID of the comparison (from _comparison_id in results)",
+    )
+    finding_id: str = Field(
+        ...,
+        description="ID of the finding being reviewed",
+    )
+    verdict: str = Field(
+        ...,
+        description="'confirmed' (real issue) or 'rejected' (false positive)",
+    )
+    reasoning: Optional[str] = Field(
+        None,
+        description="User's reasoning for the verdict",
+    )
+    category: Optional[str] = Field(
+        None,
+        description="Category of the finding (for calibration)",
+    )
+    diff_type: Optional[str] = Field(
+        None,
+        description="Type of difference (for calibration)",
+    )
+
+
+@app.post("/api/feedback")
+async def submit_feedback(request: FeedbackRequest):
+    """Submit user feedback on a finding.
+    
+    This feedback is used to:
+    1. Improve future comparisons through calibration
+    2. Track accuracy metrics
+    3. Tune thresholds based on real-world usage
+    
+    **Verdict options:**
+    - 'confirmed': The finding is a real design issue
+    - 'rejected': The finding is a false positive
+    """
+    if request.verdict not in ("confirmed", "rejected"):
+        raise HTTPException(
+            status_code=400,
+            detail="verdict must be 'confirmed' or 'rejected'"
+        )
+    
+    try:
+        db = get_database()
+        feedback_id = db.store_feedback(
+            comparison_id=request.comparison_id,
+            finding_id=request.finding_id,
+            verdict=request.verdict,
+            reasoning=request.reasoning,
+            category=request.category,
+            diff_type=request.diff_type,
+        )
+        
+        return {
+            "success": True,
+            "feedback_id": feedback_id,
+            "message": f"Feedback recorded: {request.verdict}",
+        }
+    except Exception as e:
+        logger.exception("Failed to store feedback")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/feedback/stats")
+async def get_feedback_stats():
+    """Get feedback statistics for calibration analysis.
+    
+    Returns aggregate statistics about confirmed vs rejected findings,
+    broken down by category. This data helps identify:
+    - Categories with high false positive rates (need looser thresholds)
+    - Categories with high miss rates (need tighter thresholds)
+    """
+    try:
+        db = get_database()
+        stats = db.get_feedback_stats()
+        
+        # Calculate false positive rates per category
+        rates = {}
+        for cat, counts in stats.get("by_category", {}).items():
+            total = counts["confirmed"] + counts["rejected"]
+            if total > 0:
+                rates[cat] = {
+                    "false_positive_rate": round(counts["rejected"] / total, 3),
+                    "confirmed_rate": round(counts["confirmed"] / total, 3),
+                    "total_feedback": total,
+                }
+        
+        return {
+            "success": True,
+            **stats,
+            "rates_by_category": rates,
+        }
+    except Exception as e:
+        logger.exception("Failed to get feedback stats")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/feedback/category/{category}")
+async def get_feedback_for_category(
+    category: str,
+    limit: int = Query(50, ge=1, le=500),
+):
+    """Get feedback entries for a specific category.
+    
+    Useful for reviewing feedback patterns and building calibration examples.
+    """
+    try:
+        db = get_database()
+        feedback = db.get_feedback_for_category(category, limit)
+        
+        return {
+            "success": True,
+            "category": category,
+            "count": len(feedback),
+            "feedback": feedback,
+        }
+    except Exception as e:
+        logger.exception("Failed to get category feedback")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/calibration/report")
+async def get_calibration_report():
+    """Get a calibration report with threshold suggestions.
+    
+    Analyzes collected feedback to identify:
+    - Categories with high false positive rates (need looser thresholds)
+    - Categories with low false positive rates (thresholds are well-calibrated)
+    
+    Returns suggestions for threshold adjustments.
+    """
+    try:
+        from vqa.calibration import get_auto_tuner
+        
+        tuner = get_auto_tuner()
+        report = tuner.get_calibration_report()
+        
+        return {
+            "success": True,
+            **report,
+        }
+    except Exception as e:
+        logger.exception("Failed to generate calibration report")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/calibration/apply")
+async def apply_calibration_suggestions(
+    min_confidence: float = Query(0.5, ge=0.0, le=1.0),
+):
+    """Apply threshold suggestions from feedback analysis.
+    
+    This endpoint applies suggested threshold changes to improve accuracy.
+    Only suggestions with confidence >= min_confidence are applied.
+    
+    **Note**: Changes are applied to the in-memory thresholds and will be
+    reset on server restart. For persistent changes, update the environment
+    variables or threshold config file.
+    """
+    try:
+        from vqa.calibration import get_auto_tuner
+        
+        tuner = get_auto_tuner()
+        suggestions = tuner.analyze_feedback()
+        applied = tuner.apply_suggestions(suggestions, min_confidence=min_confidence)
+        
+        return {
+            "success": True,
+            "applied_count": len(applied),
+            "applied_changes": applied,
+            "suggestions_analyzed": len(suggestions),
+        }
+    except Exception as e:
+        logger.exception("Failed to apply calibration suggestions")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Cache Management Endpoints
+# ============================================================================
+
+@app.get("/api/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics.
+    
+    Returns information about cached comparisons and screenshots,
+    including counts and database size.
+    """
+    try:
+        cache = get_cache()
+        return {
+            "success": True,
+            **cache.get_stats(),
+        }
+    except Exception as e:
+        logger.exception("Failed to get cache stats")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class CacheInvalidateRequest(BaseModel):
+    """Request body for cache invalidation."""
+    figma_url: Optional[str] = Field(
+        None,
+        description="Invalidate all comparisons with this Figma URL",
+    )
+    web_url: Optional[str] = Field(
+        None,
+        description="Invalidate all comparisons with this web URL",
+    )
+
+
+@app.delete("/api/cache")
+async def invalidate_cache(request: CacheInvalidateRequest = None):
+    """Invalidate cached comparisons.
+    
+    If no URLs specified, invalidates ALL cached comparisons.
+    Provide figma_url and/or web_url to selectively invalidate.
+    """
+    try:
+        cache = get_cache()
+        
+        if request:
+            deleted = cache.invalidate(
+                figma_url=request.figma_url,
+                web_url=request.web_url,
+            )
+        else:
+            deleted = cache.invalidate()
+        
+        return {
+            "success": True,
+            "deleted_count": deleted,
+        }
+    except Exception as e:
+        logger.exception("Failed to invalidate cache")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/cache/cleanup")
+async def cleanup_cache():
+    """Remove expired entries from the cache.
+    
+    This is automatically handled by TTL, but can be triggered
+    manually to free up space immediately.
+    """
+    try:
+        cache = get_cache()
+        result = cache.cleanup()
+        return {
+            "success": True,
+            "cleaned": result,
+        }
+    except Exception as e:
+        logger.exception("Failed to cleanup cache")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

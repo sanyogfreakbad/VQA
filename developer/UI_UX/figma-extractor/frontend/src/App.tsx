@@ -57,8 +57,11 @@ interface ComparisonResult {
     pass_a_findings?: number
     pass_b_findings?: number
     refinement_count?: number
+    local_diff_findings?: number
+    llm_calls_saved?: number
   }
   findings?: Array<{
+    id?: string
     serial_number?: number
     element_name?: string
     category?: string
@@ -73,6 +76,8 @@ interface ComparisonResult {
     web_position?: WebPosition
     figma_position?: WebPosition
   }>
+  _comparison_id?: string
+  _cached?: boolean
 }
 
 interface FormData {
@@ -196,6 +201,10 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedSerialNumbers, setSelectedSerialNumbers] = useState<Set<number>>(new Set())
   const [hoveredSerial, setHoveredSerial] = useState<number | null>(null)
+  
+  // Feedback state (Phase 4)
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState<Map<number, 'confirmed' | 'rejected'>>(new Map())
+  const [feedbackLoading, setFeedbackLoading] = useState<number | null>(null)
   const [annotatedImage, setAnnotatedImage] = useState<AnnotatedImageState>({
     baseImageUrl: null,
     annotations: [],
@@ -392,6 +401,44 @@ function App() {
 
   const clearSerialSelection = () => {
     setSelectedSerialNumbers(new Set())
+  }
+
+  // Submit feedback on a finding (Phase 4)
+  const submitFeedback = async (
+    serialNum: number,
+    verdict: 'confirmed' | 'rejected',
+    category: string,
+    findingId?: string
+  ) => {
+    if (!result?._comparison_id) {
+      console.warn('No comparison ID available for feedback')
+      return
+    }
+
+    setFeedbackLoading(serialNum)
+
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          comparison_id: result._comparison_id,
+          finding_id: findingId || `serial_${serialNum}`,
+          verdict,
+          category,
+        }),
+      })
+
+      if (response.ok) {
+        setFeedbackSubmitted(prev => new Map(prev).set(serialNum, verdict))
+      } else {
+        console.error('Failed to submit feedback:', await response.text())
+      }
+    } catch (err) {
+      console.error('Error submitting feedback:', err)
+    } finally {
+      setFeedbackLoading(null)
+    }
   }
 
   const getFilteredAnnotations = useCallback((): Annotation[] => {
@@ -967,6 +1014,9 @@ function App() {
                       <th className="bg-slate-50 px-4 py-3 text-left font-semibold text-slate-500 border-b border-gray-200 whitespace-nowrap text-xs uppercase tracking-wide">
                         Delta
                       </th>
+                      <th className="bg-slate-50 px-4 py-3 text-center font-semibold text-slate-500 border-b border-gray-200 whitespace-nowrap text-xs uppercase tracking-wide w-[100px]">
+                        Feedback
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1027,12 +1077,52 @@ function App() {
                             <td className="px-4 py-3 border-b border-slate-100 text-gray-700 align-middle font-mono text-xs text-gray-500">
                               {item.delta}
                             </td>
+                            <td className="px-4 py-3 border-b border-slate-100 align-middle">
+                              {feedbackSubmitted.has(serialNum) ? (
+                                <span className={`text-xs font-medium ${
+                                  feedbackSubmitted.get(serialNum) === 'confirmed'
+                                    ? 'text-emerald-600'
+                                    : 'text-amber-600'
+                                }`}>
+                                  {feedbackSubmitted.get(serialNum) === 'confirmed' ? '✓ Real' : '✗ FP'}
+                                </span>
+                              ) : (
+                                <div className="flex gap-1 justify-center">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      submitFeedback(serialNum, 'confirmed', category)
+                                    }}
+                                    disabled={feedbackLoading === serialNum}
+                                    className="p-1 rounded hover:bg-emerald-100 text-emerald-600 transition-colors disabled:opacity-50"
+                                    title="This is a real issue"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      submitFeedback(serialNum, 'rejected', category)
+                                    }}
+                                    disabled={feedbackLoading === serialNum}
+                                    className="p-1 rounded hover:bg-amber-100 text-amber-600 transition-colors disabled:opacity-50"
+                                    title="This is a false positive"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                      <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              )}
+                            </td>
                           </tr>
                         )
                       })
                     ) : (
                       <tr>
-                        <td colSpan={7} className="text-center text-gray-400 italic py-12">
+                        <td colSpan={8} className="text-center text-gray-400 italic py-12">
                           {selectedCategory ? 'No differences in this category' : 'No differences found'}
                         </td>
                       </tr>

@@ -125,17 +125,20 @@ def _extract_regions_from_nodes(
         
         if "position" in node:
             pos = node["position"]
-            x = pos.get("x", x)
-            y = pos.get("y", y)
-            width = pos.get("width", width)
-            height = pos.get("height", height)
+            # position can be a dict with coordinates OR a CSS string like "relative"
+            if isinstance(pos, dict):
+                x = pos.get("x", x)
+                y = pos.get("y", y)
+                width = pos.get("width", width)
+                height = pos.get("height", height)
         
         if "bounds" in node:
             bounds = node["bounds"]
-            x = bounds.get("x", x)
-            y = bounds.get("y", y)
-            width = bounds.get("width", width)
-            height = bounds.get("height", height)
+            if isinstance(bounds, dict):
+                x = bounds.get("x", x)
+                y = bounds.get("y", y)
+                width = bounds.get("width", width)
+                height = bounds.get("height", height)
         
         area = width * height
         if area < min_area:
